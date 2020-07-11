@@ -1,0 +1,19 @@
+{
+  "name": "clean-node-api",
+  "version": "1.0.0",
+  "description": "Estudo de construção de api restfull Node",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/gemirson/clean-node-api.git"
+  },
+  "author": "Gemirson",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/gemirson/clean-node-api/issues"
+  },
+  "homepage": "https://github.com/gemirson/clean-node-api#readme"
+}

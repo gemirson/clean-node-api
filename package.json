@@ -4,15 +4,17 @@
   "description": "Estudo de construção de api restfull Node",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "jest"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/gemirson/clean-node-api.git"
   },
-  "lint-staged":{
-     "*.js":["standard --fix",
-      "git add"]
+  "lint-staged": {
+    "*.js": [
+      "standard --fix",
+      "git add"
+    ]
   },
   "husky": {
     "hooks": {
@@ -26,6 +28,8 @@
   },
   "homepage": "https://github.com/gemirson/clean-node-api#readme",
   "devDependencies": {
+    "jest": "^26.1.0",
+    "jest-cli": "^26.1.0",
     "lint-staged": "^10.2.11",
     "standard": "^14.3.4"
   }

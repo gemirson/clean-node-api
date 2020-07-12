@@ -4,7 +4,11 @@
   "description": "Estudo de construção de api restfull Node",
   "main": "index.js",
   "scripts": {
-    "test": "jest"
+    "test": "jest --watchAll",
+    "test:staged": "jest"
+  },
+  "standard":{
+    "env":["jest"]
   },
   "repository": {
     "type": "git",
@@ -22,5 +26,9 @@
     "jest-cli": "^26.1.0",
     "lint-staged": "^10.2.11",
     "standard": "^14.3.4"
+  },
+  "dependencies": {
+    "express": "^4.17.1",
+    "mongose": "^0.0.2-security"
   }
 }

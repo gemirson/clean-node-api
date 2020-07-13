@@ -2,7 +2,8 @@
 // https://jestjs.io/docs/en/configuration.html
 
 module.exports = {
-  
-  coverageDirectory: "coverage",
-  testEnvironment: "node",
-};
+
+  coverageDirectory: 'coverage',
+  testEnvironment: 'node',
+  collectionCoverageFrom: ['**/src/**/*.js']
+}

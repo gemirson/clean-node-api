@@ -1,7 +1,7 @@
 {
   "name": "clean-node-api",
   "version": "1.0.0",
-  "description": "Estudo de construção de api restfull Node",
+  "description": "Estudo de construção de api Rest node js",
   "main": "index.js",
   "scripts": {
     "test": "jest --silent --colors --noStackTrace --passWithNoTests",

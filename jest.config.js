@@ -4,6 +4,6 @@
 module.exports = {
 
   coverageDirectory: 'coverage',
-  testEnvironment: 'node',
-  collectionCoverageFrom: ['**/src/**/*.js']
+  testEnvironment: 'node'
+
 }

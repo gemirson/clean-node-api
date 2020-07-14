@@ -1,6 +1,5 @@
-const httpResponse = require('../helpers/http-response')
-const MissingParamError = require('../helpers/missing-param-error')
-const InvalidParamError = require('../helpers/invalid-param-error copy')
+const HttpResponse = require('../helpers/http-response')
+const { MissingParamError, InvalidParamError } = require('../erros')
 
 module.exports = class LoginRouter {
   constructor (authUseCase, emailValidator) {
@@ -8,32 +7,37 @@ module.exports = class LoginRouter {
     this.emailValidator = emailValidator
   }
 
-  async router (httpRequest) {
+  async router (HttpRequest) {
     try {
-      if (!httpRequest || !httpRequest.body || !this.authUseCase || !this.authUseCase.auth) {
-        return httpResponse.serverError()
+      if (!HttpRequest || !HttpRequest.body || !this.authUseCase || !this.authUseCase.auth) {
+        return HttpResponse.serverError()
       }
-      const { email, password } = httpRequest.body
+      const { email, password } = HttpRequest.body
       if (!email) {
-        return httpResponse.badRequest(new MissingParamError('email'))
+        return HttpResponse.badRequest(new MissingParamError('email'))
       }
 
+      console.log(this.emailValidator.isValid(email))
+
       if (!this.emailValidator.isValid(email)) {
-        return httpResponse.badRequest(new InvalidParamError('email'))
+        return HttpResponse.badRequest(new InvalidParamError('email'))
       }
 
       if (!password) {
-        return httpResponse.badRequest(new MissingParamError('password'))
+        return HttpResponse.badRequest(new MissingParamError('password'))
       }
       const acessToken = await this.authUseCase.auth(email, password)
 
+      console.log(acessToken)
+
       if (!acessToken) {
-        return httpResponse.unauthorizedError()
+        return HttpResponse.unauthorizedError()
       }
 
-      return httpResponse.ok({ acessToken })
+      return HttpResponse.ok({ acessToken })
     } catch (error) {
-      return httpResponse.serverError()
+      console.log(error)
+      return HttpResponse.serverError()
     }
   }
 }

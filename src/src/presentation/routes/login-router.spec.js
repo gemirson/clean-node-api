@@ -1,8 +1,5 @@
 const LoginRouter = require('./login-router')
-const MissingError = require('../helpers/missing-param-error')
-const UnauthorizedError = require('../helpers/unauthorized-error')
-const ServerError = require('../helpers/server-error ')
-const InvalidParamError = require('../helpers/invalid-param-error copy')
+const { MissingParamError, InvalidParamError, ServerError, UnauthorizedError } = require('../erros')
 
 const makeSut = () => {
   const authUseCaseSpy = makeAuthUseCase()
@@ -67,7 +64,7 @@ describe('Login Router', () => {
 
     const httpResponse = await sut.router(httpRequest)
     expect(httpResponse.statusCode).toBe(400)
-    expect(httpResponse.body).toEqual(new MissingError('email'))
+    expect(httpResponse.body).toEqual(new MissingParamError('email'))
   })
 
   test('Should return 400 if no email is proveded', async () => {
@@ -79,7 +76,7 @@ describe('Login Router', () => {
     }
     const httpResponse = await sut.router(httpRequest)
     expect(httpResponse.statusCode).toBe(400)
-    expect(httpResponse.body).toEqual(new MissingError('password'))
+    expect(httpResponse.body).toEqual(new MissingParamError('password'))
   })
 
   test('Should return 500 if no httpResquest is proveded', async () => {

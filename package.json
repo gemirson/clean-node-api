@@ -10,8 +10,10 @@
     "test:staged": "yarn  test ==  --findRelatedTests",
     "test:ci": "yarn  test == --coverage"
   },
-  "standard":{
-    "env":["jest"]
+  "standard": {
+    "env": [
+      "jest"
+    ]
   },
   "repository": {
     "type": "git",
@@ -32,6 +34,7 @@
   },
   "dependencies": {
     "express": "^4.17.1",
-    "mongose": "^0.0.2-security"
+    "mongose": "^0.0.2-security",
+    "validator": "^13.1.1"
   }
 }

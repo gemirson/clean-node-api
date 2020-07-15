@@ -42,6 +42,33 @@ const makeloadUseByEmailRepository = () => {
   return loadUseByEmailRepositorySpy
 }
 
+const makeloadUseByEmailRepositoryWithError = () => {
+  class LoadUseByEmailRepositoryWithErrorSpy {
+    async load () {
+      throw new Error()
+    }
+  }
+  return new LoadUseByEmailRepositoryWithErrorSpy()
+}
+
+const makeEncrypterWithError = () => {
+  class EncrypterWithError {
+    async compare () {
+      throw new Error()
+    }
+  }
+  return new EncrypterWithError()
+}
+
+const makeTokenGeneratorWithError = () => {
+  class TokenGeneratorWithError {
+    async generate () {
+      throw new Error()
+    }
+  }
+  return new TokenGeneratorWithError()
+}
+
 const makeSut = () => {
   const encrypterSpy = makeEncrypter()
   const loadUseByEmailRepositorySpy = makeloadUseByEmailRepository()
@@ -78,24 +105,6 @@ describe('Auth UseCase', () => {
     expect(loadUseByEmailRepositorySpy.email).toBe('any_email@mail.com')
   })
 
-  test('Should throw if no dependency is provided', async () => {
-    const sut = new AuthUsecase()
-    const promise = sut.auth('any_email@mail.com', 'any_password')
-    expect(promise).rejects.toThrow()
-  })
-
-  test('Should throw if no LoadUseByEmailRepository is provided', async () => {
-    const sut = new AuthUsecase({})
-    const promise = sut.auth('any_email@mail.com', 'any_password')
-    expect(promise).rejects.toThrow()
-  })
-
-  test('Should throw if no LoadUseByEmailRepository hasno load lethod', async () => {
-    const sut = new AuthUsecase({ loadUseByEmailRepository: {} })
-    const promise = sut.auth('any_email@mail.com', 'any_password')
-    expect(promise).rejects.toThrow()
-  })
-
   test('Should return null if  an invalid email is provided', async () => {
     const { sut, loadUseByEmailRepositorySpy } = makeSut()
     loadUseByEmailRepositorySpy.user = null
@@ -128,5 +137,78 @@ describe('Auth UseCase', () => {
     const acessToken = await sut.auth('valid_email@mail.com', 'valid_password')
     expect(acessToken).toBe(tokenGeneratorSpy.acessToken)
     expect(acessToken).toBeTruthy()
+  })
+
+  test('Should throw if invalid dependency are provided', async () => {
+    const invalid = {}
+    const loadUseByEmailRepository = makeloadUseByEmailRepository()
+    const encrypter = makeEncrypter()
+
+    const suts = [].concat(
+      new AuthUsecase(),
+      new AuthUsecase({
+        loadUseByEmailRepository: null,
+        encrypter: null,
+        tokenGenerator: null
+      }),
+      new AuthUsecase({
+        loadUseByEmailRepository: invalid,
+        encrypter: null,
+        tokenGenerator: null
+      }),
+      new AuthUsecase({
+        loadUseByEmailRepository,
+        encrypter: null,
+        tokenGenerator: null
+
+      }),
+      new AuthUsecase({
+        loadUseByEmailRepository,
+        encrypter: invalid,
+        tokenGenerator: null
+      }),
+      new AuthUsecase({
+        loadUseByEmailRepository,
+        encrypter,
+        tokenGenerator: null
+      }),
+      new AuthUsecase({
+        loadUseByEmailRepository,
+        encrypter,
+        tokenGenerator: invalid
+      })
+
+    )
+    for (const sut of suts) {
+      const promise = sut.auth('any_email@mail.com', 'any_password')
+      expect(promise).rejects.toThrow()
+    }
+  })
+
+  test('Should throw if any dependency throws', async () => {
+    const loadUseByEmailRepository = makeloadUseByEmailRepository()
+    const encrypter = makeEncrypter()
+    const suts = [].concat(
+      new AuthUsecase({
+        loadUseByEmailRepository: makeloadUseByEmailRepositoryWithError(),
+        encrypter: null,
+        tokenGenerator: null
+      }),
+      new AuthUsecase({
+        loadUseByEmailRepository,
+        encrypter: makeEncrypterWithError(),
+        tokenGenerator: null
+      }),
+      new AuthUsecase({
+        loadUseByEmailRepository,
+        encrypter,
+        tokenGenerator: makeTokenGeneratorWithError()
+      })
+
+    )
+    for (const sut of suts) {
+      const promise = sut.auth('any_email@mail.com', 'any_password')
+      expect(promise).rejects.toThrow()
+    }
   })
 })

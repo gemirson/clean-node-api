@@ -68,6 +68,7 @@ const makeTokenGeneratorWithError = () => {
   }
   return new TokenGeneratorWithError()
 }
+
 const makeUpdateAcessTokenGenerator = () => {
   class UpdateAcessTokenGeneratorSpy {
     async update (userId, acessToken) {
@@ -76,6 +77,15 @@ const makeUpdateAcessTokenGenerator = () => {
     }
   }
   return new UpdateAcessTokenGeneratorSpy()
+}
+
+const makeUpdateAcessTokenGeneratorWithError = () => {
+  class UpdateAcessTokenGeneratorWithError {
+    async update () {
+      throw new Error()
+    }
+  }
+  return new UpdateAcessTokenGeneratorWithError()
 }
 
 const makeSut = () => {
@@ -163,7 +173,8 @@ describe('Auth UseCase', () => {
     const invalid = {}
     const loadUseByEmailRepository = makeloadUseByEmailRepository()
     const encrypter = makeEncrypter()
-
+    const tokenGenerator = makeTokenGeneratorSpy()
+    const updateAcessTokenGenerator = makeUpdateAcessTokenGenerator()
     const suts = [].concat(
       new AuthUsecase(),
       new AuthUsecase({
@@ -196,6 +207,24 @@ describe('Auth UseCase', () => {
         loadUseByEmailRepository,
         encrypter,
         tokenGenerator: invalid
+      }),
+      new AuthUsecase({
+        loadUseByEmailRepository,
+        encrypter,
+        tokenGenerator,
+        updateAcessTokenGenerator: null
+      }),
+      new AuthUsecase({
+        loadUseByEmailRepository,
+        encrypter,
+        tokenGenerator,
+        updateAcessTokenGenerator: invalid
+      }),
+      new AuthUsecase({
+        loadUseByEmailRepository,
+        encrypter,
+        tokenGenerator,
+        updateAcessTokenGenerator
       })
 
     )
@@ -208,6 +237,8 @@ describe('Auth UseCase', () => {
   test('Should throw if any dependency throws', async () => {
     const loadUseByEmailRepository = makeloadUseByEmailRepository()
     const encrypter = makeEncrypter()
+    const tokenGenerator = makeTokenGeneratorSpy()
+
     const suts = [].concat(
       new AuthUsecase({
         loadUseByEmailRepository: makeloadUseByEmailRepositoryWithError(),
@@ -223,6 +254,13 @@ describe('Auth UseCase', () => {
         loadUseByEmailRepository,
         encrypter,
         tokenGenerator: makeTokenGeneratorWithError()
+      }),
+
+      new AuthUsecase({
+        loadUseByEmailRepository,
+        encrypter,
+        tokenGenerator,
+        updateAcessTokenGenerator: makeUpdateAcessTokenGeneratorWithError()
       })
 
     )

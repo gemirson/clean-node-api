@@ -34,7 +34,7 @@ describe('Token Generator', () => {
   })
 
   test('Shoul throw if no id is provided', async () => {
-    const sut = new TokenGenerator()
+    const sut = new TokenGenerator('secret')
     const promise = sut.generate()
     expect(promise).rejects.toThrow(new MissingParamError('id'))
   })

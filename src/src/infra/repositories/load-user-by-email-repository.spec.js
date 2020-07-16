@@ -1,6 +1,7 @@
-const { MongoClient } = require('mongodb')
 const LoadUserByEmailRepository = require('./load-user-by-email-repository')
-let client, db
+const MongoHelper = require('../../infra/helpers/mongo-helper')
+
+let db
 
 const makeSut = () => {
   const userModel = db.collection('users')
@@ -13,11 +14,8 @@ const makeSut = () => {
 
 describe('Auth UseCase', () => {
   beforeAll(async () => {
-    client = await MongoClient.connect(process.env.MONGO_URL, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true
-    })
-    db = await client.db()
+    await MongoHelper.connect(process.env.MONGO_URL)
+    db = await MongoHelper.getDb()
   })
 
   beforeEach(async () => {
@@ -25,7 +23,7 @@ describe('Auth UseCase', () => {
   })
 
   afterAll(async () => {
-    await client.close()
+    await MongoHelper.disconnect()
   })
 
   test('Should return null if no user is found', async () => {
@@ -46,5 +44,11 @@ describe('Auth UseCase', () => {
       _id: fakeUser.ops[0]._id,
       password: fakeUser.ops[0].password
     })
+  })
+
+  test('Should throw if no userModel is provided', async () => {
+    const sut = new LoadUserByEmailRepository()
+    const promise = sut.load('invalid_email@mail.com')
+    expect(promise).rejects.toThrow()
   })
 })

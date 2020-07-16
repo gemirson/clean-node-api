@@ -1,5 +1,5 @@
 const request = require('supertest')
-const app = require('./aṕp')
+const app = require('./app')
 
 describe('App Setup', () => {
   test('Should disable x-powered-by header', async () => {
@@ -9,16 +9,5 @@ describe('App Setup', () => {
 
     const res = await request(app).get('/test_x_powered_by')
     expect(res.header['x-powered-by']).toBeUndefined()
-  })
-
-  test('Should enable CORS', async () => {
-    app.get('test_cors', (req, res) => {
-      res.send('')
-    })
-
-    const res = await request(app).get('/test_cors')
-    expect(res.header['acess-control-allow-orign']).toBe('*')
-    expect(res.header['acess-control-allow-methods']).toBe('*')
-    expect(res.header['acess-control-allow-headers']).toBe('*')
   })
 })

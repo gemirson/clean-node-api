@@ -4,8 +4,8 @@
   "description": "Estudo de construção de api Rest node js",
   "main": "index.js",
   "scripts": {
-    "test": "jest  --colors --noStackTrace --passWithNoTests",
-    "test:unit": "jest --colors --watch -c jest-unit-config.js",
+    "test": "jest  --colors  --passWithNoTests",
+    "test:unit": "jest --colors --watchAll --passWithNoTests -c jest-unit-config.js",
     "test:integration": "jest --colors --noStackTrace --passWithNoTests  -c jest-integration-config.js",
     "test:staged": "jest --colors --silent --verbose --runInBand --detectOpenHandles ",
     "test:ci": "jest  --coverage --colors --noStackTrace --passWithNoTests"

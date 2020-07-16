@@ -1,5 +1,6 @@
 const LoadUserByEmailRepository = require('./load-user-by-email-repository')
 const MongoHelper = require('../../infra/helpers/mongo-helper')
+const { MissingParamError } = require('../../utils/erros/index')
 
 let db
 
@@ -19,7 +20,7 @@ describe('Auth UseCase', () => {
   })
 
   beforeEach(async () => {
-    await db.collection('users').deleteMany({})
+    await db.collection('users').deleteMany()
   })
 
   afterAll(async () => {
@@ -50,5 +51,11 @@ describe('Auth UseCase', () => {
     const sut = new LoadUserByEmailRepository()
     const promise = sut.load('invalid_email@mail.com')
     expect(promise).rejects.toThrow()
+  })
+
+  test('Should throw if no email is provided', async () => {
+    const { sut } = makeSut()
+    const promise = sut.load()
+    expect(promise).rejects.toThrow(new MissingParamError('email'))
   })
 })

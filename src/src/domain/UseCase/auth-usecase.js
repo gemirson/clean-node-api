@@ -22,7 +22,6 @@ module.exports = class AuthUsecase {
       await this.updateAcessTokenGenerator.update(user.id, acessToken)
       return acessToken
     }
-
     return null
   }
 }

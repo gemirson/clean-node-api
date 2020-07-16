@@ -17,8 +17,6 @@ module.exports = class LoginRouter {
         return HttpResponse.badRequest(new MissingParamError('email'))
       }
 
-      console.log(this.emailValidator.isValid(email))
-
       if (!this.emailValidator.isValid(email)) {
         return HttpResponse.badRequest(new InvalidParamError('email'))
       }
@@ -28,15 +26,12 @@ module.exports = class LoginRouter {
       }
       const acessToken = await this.authUseCase.auth(email, password)
 
-      console.log(acessToken)
-
       if (!acessToken) {
         return HttpResponse.unauthorizedError()
       }
 
       return HttpResponse.ok({ acessToken })
     } catch (error) {
-      console.log(error)
       return HttpResponse.serverError()
     }
   }

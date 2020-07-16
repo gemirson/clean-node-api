@@ -2,8 +2,9 @@
   "name": "clean-node-api",
   "version": "1.0.0",
   "description": "Estudo de construção de api Rest node js",
-  "main": "index.js",
+  "main": "src/main/index.js",
   "scripts": {
+    "start": "node src/main/index.js",
     "test": "jest  --colors  --passWithNoTests",
     "test:unit": "jest --colors --watch --passWithNoTests -c jest-unit-config.js --forceExit",
     "test:integration": "jest --colors --noStackTrace --passWithNoTests  -c jest-integration-config.js",
@@ -26,6 +27,7 @@
   },
   "homepage": "https://github.com/gemirson/clean-node-api#readme",
   "devDependencies": {
+    "@shelf/jest-mongodb": "^1.2.1",
     "husky": "^4.2.5",
     "jest": "^26.1.0",
     "jest-cli": "^26.1.0",

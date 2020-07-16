@@ -7,7 +7,7 @@
     "start": "node src/main/index.js",
     "test": "jest  --colors  --passWithNoTests",
     "test:unit": "jest --colors --watch --passWithNoTests -c jest-unit-config.js --forceExit",
-    "test:integration": "jest --colors --noStackTrace --passWithNoTests  -c jest-integration-config.js",
+    "test:integration": "jest --colors --noStackTrace --passWithNoTests  -c jest-integration-config.js --forceExit",
     "test:staged": "jest --colors --runInBand --detectOpenHandles --forceExit ",
     "test:ci": "jest  --coverage --colors --noStackTrace --passWithNoTests --forceExit"
   },
@@ -32,7 +32,8 @@
     "jest": "^26.1.0",
     "jest-cli": "^26.1.0",
     "lint-staged": "^10.2.11",
-    "standard": "^14.3.4"
+    "standard": "^14.3.4",
+    "supertest": "^4.0.2"
   },
   "dependencies": {
     "bcrypt": "^5.0.0",

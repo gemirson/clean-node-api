@@ -8,7 +8,7 @@
     "test": "jest  --colors  --passWithNoTests",
     "test:unit": "jest --colors --watch --passWithNoTests -c jest-unit-config.js --forceExit",
     "test:integration": "jest --colors --noStackTrace --passWithNoTests  -c jest-integration-config.js --forceExit",
-    "test:staged": "jest --colors --runInBand --detectOpenHandles --forceExit ",
+    "test:staged": "jest --colors --runInBand --detectOpenHandles  --passWithNoTests --forceExit ",
     "test:ci": "jest  --coverage --colors --noStackTrace --passWithNoTests --forceExit"
   },
   "standard": {

@@ -223,7 +223,7 @@ describe('Auth UseCase', () => {
       new AuthUsecase({
         loadUseByEmailRepository,
         encrypter,
-        tokenGenerator,
+        tokenGenerator: null,
         updateAcessTokenGenerator
       })
 

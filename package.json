@@ -7,7 +7,7 @@
     "start": "node src/main/index.js",
     "test": "jest  --colors  --passWithNoTests",
     "test:unit": "jest --colors --watch --passWithNoTests -c jest-unit-config.js --forceExit",
-    "test:integration": "jest --colors --noStackTrace --passWithNoTests  -c jest-integration-config.js --forceExit",
+    "test:integration": "jest --colors --watch  --passWithNoTests  -c jest-integration-config.js --forceExit",
     "test:staged": "jest --colors --runInBand --detectOpenHandles  --passWithNoTests --forceExit ",
     "test:ci": "jest  --coverage --colors --noStackTrace --passWithNoTests --forceExit"
   },
@@ -37,6 +37,7 @@
   },
   "dependencies": {
     "bcrypt": "^5.0.0",
+    "body-parser": "^1.19.0",
     "express": "^4.17.1",
     "jsonwebtoken": "^8.5.1",
     "mongodb": "^3.5.9",

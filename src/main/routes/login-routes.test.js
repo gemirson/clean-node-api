@@ -32,4 +32,18 @@ describe('Login Routes', () => {
       })
       .expect(200)
   })
+  test('Should return 401 when invalid credentails are provided', async () => {
+    await userModel.insertOne({
+      email: 'valid_email@mail.com',
+      password: 'hashed_password'
+
+    })
+    request(app)
+      .post('/api/login')
+      .send({
+        email: 'valid_email@mail.com',
+        password: 'hashed_password_1'
+      })
+      .expect(401)
+  })
 })

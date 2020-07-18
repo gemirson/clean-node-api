@@ -1,2 +1,2 @@
 const express = require('express')
-module.exports = express.json({ type: 'application/*+json' })
+module.exports = express.json()

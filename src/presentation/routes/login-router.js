@@ -7,11 +7,12 @@ module.exports = class LoginRouter {
     this.emailValidator = emailValidator
   }
 
-  async router (HttpRequest) {
+  async route (HttpRequest) {
     try {
       if (!HttpRequest || !HttpRequest.body || !this.authUseCase || !this.authUseCase.auth) {
         return HttpResponse.serverError()
       }
+
       const { email, password } = HttpRequest.body
       if (!email) {
         return HttpResponse.badRequest(new MissingParamError('email'))
@@ -29,7 +30,6 @@ module.exports = class LoginRouter {
       if (!acessToken) {
         return HttpResponse.unauthorizedError()
       }
-
       return HttpResponse.ok({ acessToken })
     } catch (error) {
       return HttpResponse.serverError()

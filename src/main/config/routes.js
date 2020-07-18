@@ -1,7 +1,7 @@
-const router = require('express').router()
+const router = require('express').Router()
 const fg = require('fast-glob')
 
 module.exports = app => {
   app.use('/api', router)
-  fg.sync('**/src/main/routes/**j.s').forEach(file => require(`../../../${file}`)(router))
+  fg.sync('**/src/main/routes/**routes.js').forEach(file => require(`../../../${file}`)(router))
 }

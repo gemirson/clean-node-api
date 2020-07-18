@@ -66,7 +66,7 @@ describe('Login Router', () => {
       }
     }
 
-    const httpResponse = await sut.router(httpRequest)
+    const httpResponse = await sut.route(httpRequest)
     expect(httpResponse.statusCode).toBe(400)
     expect(httpResponse.body).toEqual(new MissingParamError('email'))
   })
@@ -78,21 +78,21 @@ describe('Login Router', () => {
         email: 'any_email@gmail.com'
       }
     }
-    const httpResponse = await sut.router(httpRequest)
+    const httpResponse = await sut.route(httpRequest)
     expect(httpResponse.statusCode).toBe(400)
     expect(httpResponse.body).toEqual(new MissingParamError('password'))
   })
 
   test('Should return 500 if no httpResquest is proveded', async () => {
     const { sut } = makeSut()
-    const httpResponse = await sut.router()
+    const httpResponse = await sut.route()
     expect(httpResponse.statusCode).toBe(500)
     expect(httpResponse.body).toEqual(new ServerError())
   })
 
   test('Should return 500 if no httpResquest has no body proveded', async () => {
     const { sut } = makeSut()
-    const httpResponse = await sut.router({})
+    const httpResponse = await sut.route({})
     expect(httpResponse.statusCode).toBe(500)
     expect(httpResponse.body).toEqual(new ServerError())
   })
@@ -105,7 +105,7 @@ describe('Login Router', () => {
         password: 'any_password'
       }
     }
-    await sut.router(httpRequest)
+    await sut.route(httpRequest)
     expect(authUseCaseSpy.email).toBe(httpRequest.body.email)
     expect(authUseCaseSpy.password).toBe(httpRequest.body.password)
   })
@@ -119,7 +119,7 @@ describe('Login Router', () => {
         password: 'invalid_password'
       }
     }
-    const httpResponse = await sut.router(httpRequest)
+    const httpResponse = await sut.route(httpRequest)
     expect(httpResponse.statusCode).toBe(401)
     expect(httpResponse.body).toEqual(new UnauthorizedError())
   })
@@ -132,7 +132,7 @@ describe('Login Router', () => {
         password: 'valid_password'
       }
     }
-    const httpResponse = await sut.router(httpRequest)
+    const httpResponse = await sut.route(httpRequest)
     expect(httpResponse.statusCode).toBe(200)
     expect(httpResponse.body.acessToken).toEqual(authUseCaseSpy.acessToken)
   })
@@ -146,7 +146,7 @@ describe('Login Router', () => {
         password: 'any_password'
       }
     }
-    const httpResponse = await sut.router(httpRequest)
+    const httpResponse = await sut.route(httpRequest)
     expect(httpResponse.statusCode).toBe(400)
     expect(httpResponse.body).toEqual(new InvalidParamError('email'))
   })
@@ -159,7 +159,7 @@ describe('Login Router', () => {
         password: 'any_password'
       }
     }
-    await sut.router(httpRequest)
+    await sut.route(httpRequest)
     expect(emailValidatorSpy.email).toBe(httpRequest.body.email)
   })
 
@@ -187,7 +187,7 @@ describe('Login Router', () => {
           password: 'any_password'
         }
       }
-      const httpResponse = await sut.router(httpRequest)
+      const httpResponse = await sut.route(httpRequest)
       expect(httpResponse.statusCode).toBe(500)
       expect(httpResponse.body).toEqual(new ServerError())
     }
@@ -213,7 +213,7 @@ describe('Login Router', () => {
           password: 'any_password'
         }
       }
-      const httpResponse = await sut.router(httpRequest)
+      const httpResponse = await sut.route(httpRequest)
       expect(httpResponse.statusCode).toBe(500)
       expect(httpResponse.body).toEqual(new ServerError())
     }

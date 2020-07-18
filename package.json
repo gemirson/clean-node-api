@@ -5,7 +5,7 @@
   "main": "src/main/index.js",
   "scripts": {
     "start": "node src/main/index.js",
-    "test": "jest  --colors  --passWithNoTests --runInBand --detectOpenHandles",
+    "test": "jest  --colors  --passWithNoTests --forceExit  --runInBand --detectOpenHandles",
     "test:unit": "jest --colors --watch --runInBand --passWithNoTests -c jest-unit-config.js --forceExit",
     "test:integration": "jest --colors --watch  --runInBand --passWithNoTests  -c jest-integration-config.js --forceExit",
     "test:staged": "jest --colors --runInBand --detectOpenHandles  --passWithNoTests --forceExit ",

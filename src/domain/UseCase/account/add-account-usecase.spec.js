@@ -25,13 +25,16 @@ class AddAccountUseCase {
     if (!name) {
       throw new MissingParamError('name')
     }
-    await this.saveUserRepository.save(email, password, name)
-
-    return true
+    this.user = await this.saveUserRepository.save(email, password, name)
+    if (!this.user) {
+      return null
+    }
+    return this.user
   }
 }
 class Encrypter {
   static async hash (value) {
+    this.has_value = 'any_hash'
     this.value = value
     return this.has_value
   }
@@ -52,7 +55,10 @@ class SaveUserRepositorySpy {
       throw new MissingParamError('name')
     }
     this.has_password = await Encrypter.hash(password)
-    return this.has_password
+    if (!this.has_password) {
+      return MissingParamError('has_password')
+    }
+    return this.user
   }
 }
 
@@ -92,5 +98,12 @@ describe('AddAccount ', () => {
     expect(saveUserRepositorySpy.email).toBe('any_email@mail.com')
     expect(saveUserRepositorySpy.password).toBe('any_password')
     expect(saveUserRepositorySpy.name).toBe('any_name')
+  })
+
+  test('Should return null  user  with correct params return', async () => {
+    const { sut, saveUserRepositorySpy } = makeSut()
+    saveUserRepositorySpy.user = null
+    await sut.add('any_email@mail.com', 'any_password', 'any_name')
+    expect(sut.user).toBeNull()
   })
 })

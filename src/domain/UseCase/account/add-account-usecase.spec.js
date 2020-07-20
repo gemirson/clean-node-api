@@ -52,10 +52,11 @@ const MakePasswordValidatorWithError = () => {
 }
 
 class AddAccountUseCaseSpy {
-  constructor ({ saveUserRepository, passwordValidator, emailValidator } = {}) {
+  constructor ({ saveUserRepository, passwordValidator, emailValidator, encrypter } = {}) {
     this.saveUserRepository = saveUserRepository
     this.passwordValidator = passwordValidator
     this.emailValidator = emailValidator
+    this.encrypter = encrypter
   }
 
   async add (email, password, name) {
@@ -74,8 +75,8 @@ class AddAccountUseCaseSpy {
     if (!this.emailValidator.isValid(email)) {
       throw new InvalidParamError('email')
     }
-    console.log(this.saveUserRepository)
-    this.user = await this.saveUserRepository.save(email, password, name)
+    this.has_password = await this.encrypter.hash(password, 10)
+    this.user = await this.saveUserRepository.save(email, this.has_password, name)
     const isValid = this.user && this.passwordValidator.isPassword(password) &&
      this.emailValidator.isValid(email)
     if (!isValid) {
@@ -84,35 +85,33 @@ class AddAccountUseCaseSpy {
     return null
   }
 }
-
-class Encrypter {
-  static async hash (value) {
-    this.has_value = 'hashed_password'
-    this.value = value
-    if (value !== this.has_value || value !== 'valid_password') {
-      return null
+const MakeEncrypterSpy = () => {
+  class EncrypterSpy {
+    async hash (value, base) {
+      this.has_value = 'hashed_password'
+      this.value = value
+      this.base = base
+      return this.has_value
     }
-    return this.has_value
   }
+  const encrypterSpy = new EncrypterSpy()
+  return encrypterSpy
 }
+
 const MakeSaveUserRepositorySpy = () => {
   class SaveUserRepositorySpy {
-    async save (email, password, name) {
+    async save (email, hashpassword, name) {
       this.email = email
-      this.password = password
+      this.hash_password = hashpassword
       this.name = name
       if (!email) {
         throw new MissingParamError('email')
       }
-      if (!password) {
-        throw new MissingParamError('password')
+      if (!hashpassword) {
+        throw new MissingParamError('hashpassword')
       }
       if (!name) {
         throw new MissingParamError('name')
-      }
-      this.has_password = await Encrypter.hash(password)
-      if (!this.has_password) {
-        return this.user
       }
       return this.user
     }
@@ -132,17 +131,20 @@ const makeSut = () => {
   const saveUserRepositorySpy = MakeSaveUserRepositorySpy()
   const passwordValidatorSpy = MakePasswordValidatorSpy()
   const emailValidatorSpy = MakeEmailValidatorSpy()
+  const encrypterSpy = MakeEncrypterSpy()
   const sut = new AddAccountUseCaseSpy({
     saveUserRepository: saveUserRepositorySpy,
     passwordValidator: passwordValidatorSpy,
-    emailValidator: emailValidatorSpy
+    emailValidator: emailValidatorSpy,
+    encrypter: encrypterSpy
   })
 
   return {
     sut,
     saveUserRepositorySpy,
     passwordValidatorSpy,
-    emailValidatorSpy
+    emailValidatorSpy,
+    encrypterSpy
   }
 }
 
@@ -166,7 +168,7 @@ describe('AddAccount ', () => {
     const { sut, saveUserRepositorySpy } = makeSut()
     await sut.add('any_email@mail.com', 'any_password', 'any_name')
     expect(saveUserRepositorySpy.email).toBe('any_email@mail.com')
-    expect(saveUserRepositorySpy.password).toBe('any_password')
+    expect(saveUserRepositorySpy.hash_password).toBe('hashed_password')
     expect(saveUserRepositorySpy.name).toBe('any_name')
   })
   test('Should return null  user  with correct params return', async () => {
@@ -174,6 +176,12 @@ describe('AddAccount ', () => {
     saveUserRepositorySpy.user = null
     await sut.add('any_email@mail.com', 'any_password', 'any_name')
     expect(sut.user).toBeNull()
+  })
+  test('Should call Encrypter with correct password  values', async () => {
+    const { sut, encrypterSpy } = makeSut()
+    await sut.add('valid_email@mail.com', 'valid_password', 'any_name')
+    expect(encrypterSpy.value).toBe('valid_password')
+    expect(encrypterSpy.base).toBe(10)
   })
   test('Should return throw  if  an invalid password is provided', async () => {
     const { sut, passwordValidatorSpy } = makeSut()

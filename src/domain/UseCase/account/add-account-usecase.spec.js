@@ -26,7 +26,6 @@ const MakePasswordValidatorSpy = () => {
       if (!password) {
         throw new MissingParamError('password')
       }
-      console.log(this.isPasswordValid)
       return this.isPasswordValid
     }
   }
@@ -58,11 +57,14 @@ class AddAccountUseCaseSpy {
     if (!this.emailValidator.isValid(email)) {
       throw new InvalidParamError('email')
     }
+    console.log(this.saveUserRepository)
     this.user = await this.saveUserRepository.save(email, password, name)
-    if (!this.user) {
-      return null
+    const isValid = this.user && this.passwordValidator.isPassword(password) &&
+     this.emailValidator.isValid(email)
+    if (!isValid) {
+      return this.user
     }
-    return this.user
+    return null
   }
 }
 
@@ -115,6 +117,7 @@ const makeSut = () => {
   return {
     sut,
     saveUserRepositorySpy,
+    passwordValidatorSpy,
     emailValidatorSpy
   }
 }
@@ -149,8 +152,8 @@ describe('AddAccount ', () => {
     expect(sut.user).toBeNull()
   })
   test('Should return throw  if  an invalid password is provided', async () => {
-    const { sut, saveUserRepositorySpy } = makeSut()
-    saveUserRepositorySpy.isPasswordValid = false
+    const { sut, passwordValidatorSpy } = makeSut()
+    passwordValidatorSpy.isPasswordValid = false
     const promise = sut.add('any_email@mail.com', 'invalid_password', 'any_name')
     expect(promise).rejects.toThrow(new InvalidParamError('password'))
   })
@@ -159,5 +162,64 @@ describe('AddAccount ', () => {
     emailValidatorSpy.isEmailValid = false
     const promise = sut.add('invalid_email@mail.com', 'any_password', 'any_name')
     expect(promise).rejects.toThrow(new InvalidParamError('email'))
+  })
+  test('Should throw if invalid dependency are provided', async () => {
+    const invalid = {}
+    const saveUserRepository = MakeSaveUserRepositorySpy()
+    const passwordValidator = MakePasswordValidatorSpy()
+    const emailValidator = MakeEmailValidatorSpy()
+    const suts = [].concat(
+      new AddAccountUseCaseSpy(),
+      new AddAccountUseCaseSpy({
+        saveUserRepository: null,
+        passwordValidator: null,
+        emailValidator: null
+      }),
+      new AddAccountUseCaseSpy({
+        saveUserRepository: invalid,
+        passwordValidator: null,
+        emailValidator: null
+      }),
+      new AddAccountUseCaseSpy({
+        saveUserRepository: null,
+        passwordValidator: invalid,
+        emailValidator: null
+      }),
+      new AddAccountUseCaseSpy({
+        saveUserRepository: null,
+        passwordValidator: null,
+        emailValidator: invalid
+      }),
+      new AddAccountUseCaseSpy({
+        saveUserRepository: invalid,
+        passwordValidator: invalid,
+        emailValidator: invalid
+      }),
+      new AddAccountUseCaseSpy({
+        saveUserRepository: invalid,
+        passwordValidator: null,
+        emailValidator: null
+      }),
+      new AddAccountUseCaseSpy({
+        saveUserRepository,
+        passwordValidator,
+        emailValidator: invalid
+      }),
+      new AddAccountUseCaseSpy({
+        saveUserRepository: invalid,
+        passwordValidator,
+        emailValidator: invalid
+      }),
+      new AddAccountUseCaseSpy({
+        saveUserRepository: invalid,
+        passwordValidator: invalid,
+        emailValidator
+      })
+
+    )
+    for (const sut of suts) {
+      const promise = sut.add('any_email@mail.com', 'any_password', 'any_name')
+      expect(promise).rejects.toThrow()
+    }
   })
 })

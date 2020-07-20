@@ -1,9 +1,15 @@
 jest.mock('bcrypt', () => ({
   isValid: true,
-  async compare (value, hash) {
+  async compare (value, hashvalue) {
     this.value = value
-    this.hash = hash
+    this.hashvalue = hashvalue
     return this.isValid
+  },
+  async hashSync (value, base) {
+    this.hashresult = 'hashed_password'
+    this.valueS = value
+    this.base = base
+    return this.hashresult
   }
 })
 )
@@ -33,7 +39,15 @@ describe('Encrypter', () => {
     const sut = makeSut()
     await sut.compare('any_value', 'hashed_value')
     expect(bcrypt.value).toBe('any_value')
-    expect(bcrypt.hash).toBe('hashed_value')
+    expect(bcrypt.hashvalue).toBe('hashed_value')
+  })
+
+  test('Should call bcrypt hash with correct values', async () => {
+    const sut = makeSut()
+    const hashedpassword = await sut.hashSync('any_value', 10)
+    expect(bcrypt.valueS).toBe('any_value')
+    expect(bcrypt.base).toBe(10)
+    expect(hashedpassword).toBe('hashed_password')
   })
   test('Should throw if no param are provided', async () => {
     const sut = makeSut()

@@ -12,4 +12,15 @@ module.exports = class Encrypter {
     const isValid = await bcrypt.compare(value, hash)
     return isValid
   }
+
+  async hashSync (value, base) {
+    if (!value) {
+      throw new MissingParamError('value')
+    }
+    if (!base) {
+      throw new MissingParamError('hash')
+    }
+    const hashResult = await bcrypt.hashSync(value, base)
+    return hashResult
+  }
 }

@@ -97,7 +97,14 @@ const MakeEncrypterSpy = () => {
   const encrypterSpy = new EncrypterSpy()
   return encrypterSpy
 }
-
+const MakeEncrypterWithError = () => {
+  class MakeEncrypterWithError {
+    async update () {
+      throw new Error()
+    }
+  }
+  return new MakeEncrypterWithError()
+}
 const MakeSaveUserRepositorySpy = () => {
   class SaveUserRepositorySpy {
     async save (email, hashpassword, name) {
@@ -272,6 +279,7 @@ describe('AddAccount ', () => {
     const saveUserRepository = MakeSaveUserRepositorySpy()
     const passwordValidator = MakePasswordValidatorSpy()
     const emailValidator = MakeEmailValidatorSpy()
+    const encrypter = MakeEncrypterSpy()
     const suts = [].concat(
       new AddAccountUseCaseSpy(),
       new AddAccountUseCaseSpy({
@@ -282,17 +290,26 @@ describe('AddAccount ', () => {
       new AddAccountUseCaseSpy({
         saveUserRepository: MakeSaveUserRepositoryWithError(),
         passwordValidator,
-        emailValidator
+        emailValidator,
+        encrypter
       }),
       new AddAccountUseCaseSpy({
         saveUserRepository,
         passwordValidator: MakePasswordValidatorWithError(),
-        emailValidator
+        emailValidator,
+        encrypter
       }),
       new AddAccountUseCaseSpy({
         saveUserRepository,
         passwordValidator,
-        emailValidator: MakeEmailValidatorWithError()
+        emailValidator: MakeEmailValidatorWithError(),
+        encrypter
+      }),
+      new AddAccountUseCaseSpy({
+        saveUserRepository,
+        passwordValidator,
+        emailValidator,
+        encrypter: MakeEncrypterWithError()
       })
     )
     for (const sut of suts) {

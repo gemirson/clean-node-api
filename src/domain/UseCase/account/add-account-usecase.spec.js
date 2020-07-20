@@ -200,12 +200,14 @@ describe('AddAccount ', () => {
     const saveUserRepository = MakeSaveUserRepositorySpy()
     const passwordValidator = MakePasswordValidatorSpy()
     const emailValidator = MakeEmailValidatorSpy()
+    const encrypter = MakeEncrypterSpy()
     const suts = [].concat(
       new AddAccountUseCaseSpy(),
       new AddAccountUseCaseSpy({
         saveUserRepository: null,
         passwordValidator: null,
-        emailValidator: null
+        emailValidator: null,
+        encrypter: null
       }),
       new AddAccountUseCaseSpy({
         saveUserRepository: invalid,
@@ -238,6 +240,12 @@ describe('AddAccount ', () => {
         emailValidator: invalid
       }),
       new AddAccountUseCaseSpy({
+        saveUserRepository,
+        passwordValidator,
+        emailValidator,
+        encrypter: invalid
+      }),
+      new AddAccountUseCaseSpy({
         saveUserRepository: invalid,
         passwordValidator,
         emailValidator: invalid
@@ -246,6 +254,12 @@ describe('AddAccount ', () => {
         saveUserRepository: invalid,
         passwordValidator: invalid,
         emailValidator
+      }),
+      new AddAccountUseCaseSpy({
+        saveUserRepository: invalid,
+        passwordValidator: invalid,
+        emailValidator: invalid,
+        encrypter
       })
 
     )

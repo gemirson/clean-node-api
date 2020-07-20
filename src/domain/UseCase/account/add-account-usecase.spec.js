@@ -20,6 +20,14 @@ const MakeEmailValidatorSpy = () => {
   emailValidatorSpy.isEmailValid = true
   return emailValidatorSpy
 }
+const MakeEmailValidatorWithError = () => {
+  class EmailValidatorWithError {
+    async update () {
+      throw new Error()
+    }
+  }
+  return new EmailValidatorWithError()
+}
 const MakePasswordValidatorSpy = () => {
   class PasswordValidatorSpy {
     isPassword (password) {
@@ -34,6 +42,15 @@ const MakePasswordValidatorSpy = () => {
   passwordValidatorSpy.isPasswordValid = true
   return passwordValidatorSpy
 }
+const MakePasswordValidatorWithError = () => {
+  class PasswordValidatorWithError {
+    async update () {
+      throw new Error()
+    }
+  }
+  return new PasswordValidatorWithError()
+}
+
 class AddAccountUseCaseSpy {
   constructor ({ saveUserRepository, passwordValidator, emailValidator } = {}) {
     this.saveUserRepository = saveUserRepository
@@ -103,7 +120,14 @@ const MakeSaveUserRepositorySpy = () => {
   const saveUserRepositorySpy = new SaveUserRepositorySpy()
   return saveUserRepositorySpy
 }
-
+const MakeSaveUserRepositoryWithError = () => {
+  class SaveUserRepositoryWithError {
+    async update () {
+      throw new Error()
+    }
+  }
+  return new SaveUserRepositoryWithError()
+}
 const makeSut = () => {
   const saveUserRepositorySpy = MakeSaveUserRepositorySpy()
   const passwordValidatorSpy = MakePasswordValidatorSpy()
@@ -216,6 +240,38 @@ describe('AddAccount ', () => {
         emailValidator
       })
 
+    )
+    for (const sut of suts) {
+      const promise = sut.add('any_email@mail.com', 'any_password', 'any_name')
+      expect(promise).rejects.toThrow()
+    }
+  })
+  test('Should throw if any dependency throws', async () => {
+    const saveUserRepository = MakeSaveUserRepositorySpy()
+    const passwordValidator = MakePasswordValidatorSpy()
+    const emailValidator = MakeEmailValidatorSpy()
+    const suts = [].concat(
+      new AddAccountUseCaseSpy(),
+      new AddAccountUseCaseSpy({
+        saveUserRepository,
+        passwordValidator: null,
+        emailValidator: null
+      }),
+      new AddAccountUseCaseSpy({
+        saveUserRepository: MakeSaveUserRepositoryWithError(),
+        passwordValidator,
+        emailValidator
+      }),
+      new AddAccountUseCaseSpy({
+        saveUserRepository,
+        passwordValidator: MakePasswordValidatorWithError(),
+        emailValidator
+      }),
+      new AddAccountUseCaseSpy({
+        saveUserRepository,
+        passwordValidator,
+        emailValidator: MakeEmailValidatorWithError()
+      })
     )
     for (const sut of suts) {
       const promise = sut.add('any_email@mail.com', 'any_password', 'any_name')

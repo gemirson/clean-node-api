@@ -8,7 +8,7 @@ const makeSut = () => {
   return new SaveUserRepository()
 }
 
-describe('Descrive test', () => {
+describe('Save user use case', () => {
   beforeAll(async () => {
     await MongoHelper.connect(process.env.MONGO_URL)
     userModel = await MongoHelper.getCollection('users')
@@ -21,11 +21,6 @@ describe('Descrive test', () => {
   afterAll(async () => {
     await MongoHelper.disconnect()
   })
-  test('Should return null if user not creating ', async () => {
-    const sut = makeSut()
-    const user = await sut.save('valid_email@mail.com', 'valid_password', 'any_name')
-    expect(user).toBeNull()
-  })
   test('Should throw if no email is provided', async () => {
     const sut = makeSut()
     const promise = sut.save()
@@ -35,5 +30,16 @@ describe('Descrive test', () => {
     const sut = makeSut()
     const promise = sut.save('valid_email@mail.com')
     expect(promise).rejects.toThrow(new MissingParamError('hashpassword'))
+  })
+  test('Should throw if no name is provided', async () => {
+    const sut = makeSut()
+    const promise = sut.save('valid_email@mail.com', 'valid_password')
+    expect(promise).rejects.toThrow(new MissingParamError('name'))
+  })
+  test('Should return  user  if  sucess creating user', async () => {
+    const sut = makeSut()
+    const user = await sut.save('valid_email@mail.com', 'valid_password', 'any_name')
+    expect(user.name).toBe('any_name')
+    expect(user.email).toBe('valid_email@mail.com')
   })
 })

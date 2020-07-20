@@ -31,4 +31,9 @@ describe('Descrive test', () => {
     const promise = sut.save()
     expect(promise).rejects.toThrow(new MissingParamError('email'))
   })
+  test('Should throw if no password is provided', async () => {
+    const sut = makeSut()
+    const promise = sut.save('valid_email@mail.com')
+    expect(promise).rejects.toThrow(new MissingParamError('hashpassword'))
+  })
 })

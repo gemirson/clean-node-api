@@ -7,7 +7,7 @@ jest.mock('bcrypt', () => ({
 })
 )
 const { MissingParamError, InvalidParamError } = require('../../../utils/erros')
-
+const AddAccountUseCase = require('./add-account-usecase')
 const MakeEmailValidatorSpy = () => {
   class EmailValidatorSpy {
     isValid (email) {
@@ -49,41 +49,6 @@ const MakePasswordValidatorWithError = () => {
     }
   }
   return new PasswordValidatorWithError()
-}
-
-class AddAccountUseCaseSpy {
-  constructor ({ saveUserRepository, passwordValidator, emailValidator, encrypter } = {}) {
-    this.saveUserRepository = saveUserRepository
-    this.passwordValidator = passwordValidator
-    this.emailValidator = emailValidator
-    this.encrypter = encrypter
-  }
-
-  async add (email, password, name) {
-    if (!email) {
-      throw new MissingParamError('email')
-    }
-    if (!password) {
-      throw new MissingParamError('password')
-    }
-    if (!name) {
-      throw new MissingParamError('name')
-    }
-    if (!this.passwordValidator.isPassword(password)) {
-      throw new InvalidParamError('password')
-    }
-    if (!this.emailValidator.isValid(email)) {
-      throw new InvalidParamError('email')
-    }
-    this.has_password = await this.encrypter.hash(password, 10)
-    this.user = await this.saveUserRepository.save(email, this.has_password, name)
-    const isValid = this.user && this.passwordValidator.isPassword(password) &&
-     this.emailValidator.isValid(email)
-    if (!isValid) {
-      return this.user
-    }
-    return null
-  }
 }
 const MakeEncrypterSpy = () => {
   class EncrypterSpy {
@@ -139,7 +104,7 @@ const makeSut = () => {
   const passwordValidatorSpy = MakePasswordValidatorSpy()
   const emailValidatorSpy = MakeEmailValidatorSpy()
   const encrypterSpy = MakeEncrypterSpy()
-  const sut = new AddAccountUseCaseSpy({
+  const sut = new AddAccountUseCase({
     saveUserRepository: saveUserRepositorySpy,
     passwordValidator: passwordValidatorSpy,
     emailValidator: emailValidatorSpy,
@@ -209,60 +174,60 @@ describe('AddAccount ', () => {
     const emailValidator = MakeEmailValidatorSpy()
     const encrypter = MakeEncrypterSpy()
     const suts = [].concat(
-      new AddAccountUseCaseSpy(),
-      new AddAccountUseCaseSpy({
+      new AddAccountUseCase(),
+      new AddAccountUseCase({
         saveUserRepository: null,
         passwordValidator: null,
         emailValidator: null,
         encrypter: null
       }),
-      new AddAccountUseCaseSpy({
+      new AddAccountUseCase({
         saveUserRepository: invalid,
         passwordValidator: null,
         emailValidator: null
       }),
-      new AddAccountUseCaseSpy({
+      new AddAccountUseCase({
         saveUserRepository: null,
         passwordValidator: invalid,
         emailValidator: null
       }),
-      new AddAccountUseCaseSpy({
+      new AddAccountUseCase({
         saveUserRepository: null,
         passwordValidator: null,
         emailValidator: invalid
       }),
-      new AddAccountUseCaseSpy({
+      new AddAccountUseCase({
         saveUserRepository: invalid,
         passwordValidator: invalid,
         emailValidator: invalid
       }),
-      new AddAccountUseCaseSpy({
+      new AddAccountUseCase({
         saveUserRepository: invalid,
         passwordValidator: null,
         emailValidator: null
       }),
-      new AddAccountUseCaseSpy({
+      new AddAccountUseCase({
         saveUserRepository,
         passwordValidator,
         emailValidator: invalid
       }),
-      new AddAccountUseCaseSpy({
+      new AddAccountUseCase({
         saveUserRepository,
         passwordValidator,
         emailValidator,
         encrypter: invalid
       }),
-      new AddAccountUseCaseSpy({
+      new AddAccountUseCase({
         saveUserRepository: invalid,
         passwordValidator,
         emailValidator: invalid
       }),
-      new AddAccountUseCaseSpy({
+      new AddAccountUseCase({
         saveUserRepository: invalid,
         passwordValidator: invalid,
         emailValidator
       }),
-      new AddAccountUseCaseSpy({
+      new AddAccountUseCase({
         saveUserRepository: invalid,
         passwordValidator: invalid,
         emailValidator: invalid,
@@ -281,31 +246,31 @@ describe('AddAccount ', () => {
     const emailValidator = MakeEmailValidatorSpy()
     const encrypter = MakeEncrypterSpy()
     const suts = [].concat(
-      new AddAccountUseCaseSpy(),
-      new AddAccountUseCaseSpy({
+      new AddAccountUseCase(),
+      new AddAccountUseCase({
         saveUserRepository,
         passwordValidator: null,
         emailValidator: null
       }),
-      new AddAccountUseCaseSpy({
+      new AddAccountUseCase({
         saveUserRepository: MakeSaveUserRepositoryWithError(),
         passwordValidator,
         emailValidator,
         encrypter
       }),
-      new AddAccountUseCaseSpy({
+      new AddAccountUseCase({
         saveUserRepository,
         passwordValidator: MakePasswordValidatorWithError(),
         emailValidator,
         encrypter
       }),
-      new AddAccountUseCaseSpy({
+      new AddAccountUseCase({
         saveUserRepository,
         passwordValidator,
         emailValidator: MakeEmailValidatorWithError(),
         encrypter
       }),
-      new AddAccountUseCaseSpy({
+      new AddAccountUseCase({
         saveUserRepository,
         passwordValidator,
         emailValidator,

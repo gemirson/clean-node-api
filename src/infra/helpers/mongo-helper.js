@@ -19,6 +19,9 @@ module.exports = {
       await this.connect(this.uri)
     }
     return this.db.collection(name)
+  },
+  async save (email, haspassword, name) {
+    return null
   }
 
 }

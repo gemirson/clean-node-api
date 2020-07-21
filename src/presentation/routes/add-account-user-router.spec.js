@@ -63,4 +63,10 @@ describe('Add Account User Route', () => {
     expect(httpResponse.statusCode).toBe(500)
     expect(httpResponse.body.error).toBe(new ServerError().message)
   })
+  test('Should return 500 if no body are proveded', async () => {
+    const sut = new AddAccountRoute()
+    const httpResponse = await sut.route()
+    expect(httpResponse.statusCode).toBe(500)
+    expect(httpResponse.body.error).toBe(new ServerError().message)
+  })
 })

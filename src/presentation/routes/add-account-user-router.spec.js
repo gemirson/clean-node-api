@@ -7,6 +7,10 @@ class AddAccountUseCaseSpy {
     this.email = email
     this.password = password
     this.name = name
+    this.user = {
+      email: email,
+      name: name
+    }
     return this.user
   }
 }
@@ -16,21 +20,28 @@ class AddAccountRoute {
   }
 
   async route (httpRequest) {
-    if (!httpRequest || !httpRequest.body || !this.addAccountUseCase) {
-      return HttpResponse.serverError()
+    try {
+      if (!httpRequest || !httpRequest.body || !this.addAccountUseCase) {
+        return HttpResponse.serverError()
+      }
+      const { email, password, name } = httpRequest.body
+      if (!email) {
+        return HttpResponse.badRequest(new MissingParamError('email'))
+      }
+      if (!password) {
+        return HttpResponse.badRequest(new MissingParamError('password'))
+      }
+      if (!name) {
+        return HttpResponse.badRequest(new MissingParamError('name'))
+      }
+      this.user = await this.addAccountUseCase.save(email, password, name)
+      if (!this.user) {
+        HttpResponse.serverError()
+      }
+      return HttpResponse.Created(this.user)
+    } catch (error) {
+      HttpResponse.serverError()
     }
-    const { email, password, name } = httpRequest.body
-    if (!email) {
-      return HttpResponse.badRequest(new MissingParamError('email'))
-    }
-    if (!password) {
-      return HttpResponse.badRequest(new MissingParamError('password'))
-    }
-    if (!name) {
-      return HttpResponse.badRequest(new MissingParamError('name'))
-    }
-    this.user = await this.addAccountUseCase.save(email, password, name)
-    return this.user
   }
 }
 
@@ -113,5 +124,19 @@ describe('Add Account User Route', () => {
     expect(addAccountUseCaseSpy.email).toBe(httpRequest.body.email)
     expect(addAccountUseCaseSpy.password).toBe(httpRequest.body.password)
     expect(addAccountUseCaseSpy.name).toBe(httpRequest.body.name)
+  })
+  test('Should return 201 when params valid are provided', async () => {
+    const { sut, addAccountUseCaseSpy } = makeSut()
+    const httpRequest = {
+      body: {
+        email: 'valid_email@gmail.com',
+        password: 'valid_password',
+        name: 'any_name'
+      }
+    }
+    const httpResponse = await sut.route(httpRequest)
+    expect(httpResponse.statusCode).toBe(201)
+    expect(httpResponse.body.email).toEqual(addAccountUseCaseSpy.user.email)
+    expect(httpResponse.body.name).toEqual(addAccountUseCaseSpy.user.name)
   })
 })

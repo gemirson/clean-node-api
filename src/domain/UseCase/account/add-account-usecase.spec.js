@@ -146,8 +146,24 @@ describe('AddAccount ', () => {
   test('Should return null  user  with correct params return', async () => {
     const { sut, saveUserRepositorySpy } = makeSut()
     saveUserRepositorySpy.user = null
+    const user = await sut.add('any_email@mail.com', 'any_password', 'any_name')
+    expect(user).toBeNull()
+  })
+  test('Should return null  user  with correct params return', async () => {
+    const { sut, saveUserRepositorySpy } = makeSut()
+    saveUserRepositorySpy.user = null
     await sut.add('any_email@mail.com', 'any_password', 'any_name')
-    expect(sut.user).toBeNull()
+    expect(sut.user).toEqual(saveUserRepositorySpy.user)
+  })
+
+  test('Should return  user  with correct params return', async () => {
+    const { sut, saveUserRepositorySpy } = makeSut()
+    saveUserRepositorySpy.user = {
+      email: 'valid_email@mail.com',
+      name: 'valid_password'
+    }
+    const user = await sut.add('valid_email@mail.com', 'valid_password', 'valid_name')
+    expect(user).toEqual(saveUserRepositorySpy.user)
   })
   test('Should call Encrypter with correct password  values', async () => {
     const { sut, encrypterSpy } = makeSut()

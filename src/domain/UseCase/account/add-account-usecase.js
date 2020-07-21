@@ -27,8 +27,8 @@ module.exports = class AddAccountUseCase {
     this.has_password = await this.encrypter.hash(password, 10)
     this.user = await this.saveUserRepository.save(email, this.has_password, name)
     const isValid = this.user && this.passwordValidator.isPassword(password) &&
-     this.emailValidator.isValid(email)
-    if (!isValid) {
+    this.emailValidator.isValid(email)
+    if (isValid) {
       return this.user
     }
     return null

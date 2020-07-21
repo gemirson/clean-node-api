@@ -28,14 +28,10 @@ module.exports = {
       password: haspassword,
       name: name
     })
-    if (newUser) {
-      return {
-        _id: newUser.ops[0]._id,
-        name: newUser.ops[0].name,
-        email: newUser.ops[0].email
-      }
+    return {
+      _id: newUser.ops[0]._id,
+      name: newUser.ops[0].name,
+      email: newUser.ops[0].email
     }
-    return null
   }
-
 }

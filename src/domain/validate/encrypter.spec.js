@@ -54,4 +54,10 @@ describe('Encrypter', () => {
     expect(sut.compare()).rejects.toThrow(new MissingParamError('value'))
     expect(sut.compare('any_value')).rejects.toThrow(new MissingParamError('hash'))
   })
+
+  test('Should throw hashSync if no param are provided', async () => {
+    const sut = makeSut()
+    expect(sut.hashSync()).rejects.toThrow(new MissingParamError('value'))
+    expect(sut.hashSync('any_value')).rejects.toThrow(new MissingParamError('base'))
+  })
 })

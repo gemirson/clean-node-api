@@ -18,7 +18,7 @@ module.exports = class Encrypter {
       throw new MissingParamError('value')
     }
     if (!base) {
-      throw new MissingParamError('hash')
+      throw new MissingParamError('base')
     }
     const hashResult = await bcrypt.hashSync(value, base)
     return hashResult

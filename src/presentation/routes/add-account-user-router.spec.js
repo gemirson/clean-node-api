@@ -1,52 +1,21 @@
 const { MissingParamError } = require('../../utils/erros')
-const HttpResponse = require('../helpers/http-response')
 const { ServerError } = require('../erros')
+const AddAccountRoute = require('./add-account-user-router')
 
 class AddAccountUseCaseSpy {
   async save (email, password, name) {
     this.email = email
     this.password = password
     this.name = name
-    this.user = {
-      email: email,
-      name: name
-    }
     return this.user
   }
 }
-class AddAccountRoute {
-  constructor (addAccountUseCase) {
-    this.addAccountUseCase = addAccountUseCase
-  }
 
-  async route (httpRequest) {
-    try {
-      if (!httpRequest || !httpRequest.body || !this.addAccountUseCase) {
-        return HttpResponse.serverError()
-      }
-      const { email, password, name } = httpRequest.body
-      if (!email) {
-        return HttpResponse.badRequest(new MissingParamError('email'))
-      }
-      if (!password) {
-        return HttpResponse.badRequest(new MissingParamError('password'))
-      }
-      if (!name) {
-        return HttpResponse.badRequest(new MissingParamError('name'))
-      }
-      this.user = await this.addAccountUseCase.save(email, password, name)
-      if (!this.user) {
-        HttpResponse.serverError()
-      }
-      return HttpResponse.Created(this.user)
-    } catch (error) {
-      HttpResponse.serverError()
-    }
-  }
+const makeAddAccountUseCase = () => {
+  return new AddAccountUseCaseSpy()
 }
-
 const makeSut = () => {
-  const addAccountUseCaseSpy = new AddAccountUseCaseSpy()
+  const addAccountUseCaseSpy = makeAddAccountUseCase()
   const addAccountRoute = new AddAccountRoute(addAccountUseCaseSpy)
 
   return {
@@ -111,6 +80,13 @@ describe('Add Account User Route', () => {
     expect(httpResponse.statusCode).toBe(500)
     expect(httpResponse.body.error).toBe(new ServerError().message)
   })
+  test('Should return 500 if  AddAccountUseCase return null', async () => {
+    const { sut, addAccountUseCaseSpy } = makeSut()
+    addAccountUseCaseSpy.user = null
+    const httpResponse = await sut.route()
+    expect(httpResponse.statusCode).toBe(500)
+    expect(httpResponse.body.error).toBe(new ServerError().message)
+  })
   test('Should call AddAccountUseCase with correct params', async () => {
     const { sut, addAccountUseCaseSpy } = makeSut()
     const httpRequest = {
@@ -134,9 +110,37 @@ describe('Add Account User Route', () => {
         name: 'any_name'
       }
     }
+    addAccountUseCaseSpy.user = {
+      email: 'valid_email@gmail.com',
+      password: 'valid_password'
+    }
     const httpResponse = await sut.route(httpRequest)
     expect(httpResponse.statusCode).toBe(201)
     expect(httpResponse.body.email).toEqual(addAccountUseCaseSpy.user.email)
     expect(httpResponse.body.name).toEqual(addAccountUseCaseSpy.user.name)
+  })
+  test('Should throw if invalid dependency are provided', async () => {
+    const invalid = {}
+    const suts = [].concat(
+      new AddAccountRoute(),
+      new AddAccountRoute(
+        {}
+      ),
+      new AddAccountRoute({
+        addAccountUseCase: invalid
+      })
+    )
+    for (const sut of suts) {
+      const httpRequest = {
+        body: {
+          email: 'valid_email@gmail.com',
+          password: 'valid_password',
+          name: 'any_name'
+        }
+      }
+      const httpResponse = await sut.route(httpRequest)
+      expect(httpResponse.statusCode).toBe(500)
+      expect(httpResponse.body.error).toBe(new ServerError().message)
+    }
   })
 })

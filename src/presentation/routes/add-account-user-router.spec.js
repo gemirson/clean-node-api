@@ -1,5 +1,6 @@
 const { MissingParamError } = require('../../utils/erros')
 const HttpResponse = require('../helpers/http-response')
+const { ServerError } = require('../erros')
 
 class AddAccountRoute {
   async route (httpRequest) {
@@ -55,5 +56,11 @@ describe('Add Account User Route', () => {
     const httpResponse = await sut.route(httpRequest)
     expect(httpResponse.statusCode).toBe(400)
     expect(httpResponse.body.error).toBe(new MissingParamError('name').message)
+  })
+  test('Should return 500 if no httpRequest are proveded', async () => {
+    const sut = new AddAccountRoute()
+    const httpResponse = await sut.route({})
+    expect(httpResponse.statusCode).toBe(500)
+    expect(httpResponse.body.error).toBe(new ServerError().message)
   })
 })

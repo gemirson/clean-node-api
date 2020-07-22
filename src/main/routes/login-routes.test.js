@@ -32,8 +32,6 @@ describe('Login Routes', () => {
         password: bcrypt.hash('hashed_password', 10)
       })
       .expect(200)
-
-    console.log(await bcrypt.hash('hashed_password', 10))
   })
   test('Should return 401 when invalid credentails are provided', async () => {
     await userModel.insertOne({

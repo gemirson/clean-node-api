@@ -18,17 +18,18 @@ module.exports = class AddAccountUseCase {
     if (!name) {
       throw new MissingParamError('name')
     }
-    if (!this.passwordValidator.isPassword(password)) {
+    const resultValidate = await this.passwordValidator.isValid(password)
+    console.log(resultValidate)
+    if (!resultValidate) {
       throw new InvalidParamError('password')
     }
     if (!this.emailValidator.isValid(email)) {
       throw new InvalidParamError('email')
     }
-    this.has_password = await this.encrypter.hash(password, 10)
+    this.has_password = await this.encrypter.hashSync(password, 10)
     this.user = await this.saveUserRepository.save(email, this.has_password, name)
-    const isValid = this.user && this.passwordValidator.isPassword(password) &&
-    this.emailValidator.isValid(email)
-    if (isValid) {
+    console.log(this.user)
+    if (this.user) {
       return this.user
     }
     return null

@@ -6,8 +6,8 @@
   "scripts": {
     "start": "node src/main/index.js",
     "test": "jest  --colors  --passWithNoTests --forceExit  --runInBand --detectOpenHandles",
-    "test:unit": "jest --colors --watch --runInBand --passWithNoTests -c jest-unit-config.js --forceExit",
-    "test:integration": "jest --colors --watch  --runInBand --passWithNoTests  -c jest-integration-config.js --forceExit",
+    "test:unit": "jest --colors  --runInBand --passWithNoTests -c jest-unit-config.js --forceExit",
+    "test:integration": "jest --colors   --runInBand --passWithNoTests  -c jest-integration-config.js --forceExit",
     "test:staged": "jest --colors --runInBand --detectOpenHandles  --passWithNoTests --forceExit ",
     "test:ci": "jest  --coverage --colors --noStackTrace --passWithNoTests --runInBand --forceExit"
   },
@@ -40,9 +40,11 @@
     "body-parser": "^1.19.0",
     "express": "^4.17.1",
     "fast-glob": "^3.2.4",
+    "joi-password-complexity": "^4.2.0",
     "jsonwebtoken": "^8.5.1",
     "mongodb": "^3.5.9",
     "mongose": "^0.0.2-security",
+    "password-validator": "^5.0.3",
     "validator": "^13.1.1"
   }
 }

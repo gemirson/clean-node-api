@@ -29,8 +29,8 @@ const MakeEmailValidatorWithError = () => {
   return new EmailValidatorWithError()
 }
 const MakePasswordValidatorSpy = () => {
-  class PasswordValidatorSpy {
-    isPassword (password) {
+  class ValidatorPasswordSpy {
+    isValid (password) {
       if (!password) {
         throw new MissingParamError('password')
       }
@@ -38,7 +38,7 @@ const MakePasswordValidatorSpy = () => {
     }
   }
 
-  const passwordValidatorSpy = new PasswordValidatorSpy()
+  const passwordValidatorSpy = new ValidatorPasswordSpy()
   passwordValidatorSpy.isPasswordValid = true
   return passwordValidatorSpy
 }
@@ -52,7 +52,7 @@ const MakePasswordValidatorWithError = () => {
 }
 const MakeEncrypterSpy = () => {
   class EncrypterSpy {
-    async hash (value, base) {
+    async hashSync (value, base) {
       this.has_value = 'hashed_password'
       this.value = value
       this.base = base

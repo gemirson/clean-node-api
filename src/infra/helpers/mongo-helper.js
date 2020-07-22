@@ -22,7 +22,7 @@ module.exports = {
     return this.db.collection(name)
   },
   async save (email, haspassword, name) {
-    const userModel = this.db.collection(this.namedb)
+    const userModel = this.db.collection('users')
     const newUser = await userModel.insertOne({
       email: email,
       password: haspassword,

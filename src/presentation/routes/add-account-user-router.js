@@ -1,9 +1,11 @@
-const { MissingParamError } = require('../../utils/erros')
+const { MissingParamError, InvalidParamError } = require('../../utils/erros')
 const HttpResponse = require('../helpers/http-response')
 
 module.exports = class AddAccountRoute {
-  constructor (addAccountUseCase) {
+  constructor ({ addAccountUseCase, passwordValidator, emailValidator } = {}) {
     this.addAccountUseCase = addAccountUseCase
+    this.passwordValidator = passwordValidator
+    this.emailValidator = emailValidator
   }
 
   async route (httpRequest) {
@@ -21,12 +23,23 @@ module.exports = class AddAccountRoute {
       if (!name) {
         return HttpResponse.badRequest(new MissingParamError('name'))
       }
-      this.user = await this.addAccountUseCase.save(email, password, name)
+      const isValidEmail = await this.emailValidator.isValid(email)
+      const isValidPassword = await this.passwordValidator.isValid(password)
+      console.log(isValidEmail)
+      console.log(isValidPassword)
+      if (!isValidEmail) {
+        return HttpResponse.badRequest(new InvalidParamError('email'))
+      }
+      if (!isValidPassword) {
+        return HttpResponse.badRequest(new InvalidParamError('password'))
+      }
+      this.user = await this.addAccountUseCase.add(email, password, name)
       if (!this.user) {
         return HttpResponse.serverError()
       }
       return HttpResponse.Created(this.user)
     } catch (error) {
+      console.log(error)
       return HttpResponse.serverError()
     }
   }

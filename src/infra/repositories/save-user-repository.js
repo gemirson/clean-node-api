@@ -12,7 +12,17 @@ module.exports = class SaveUserRepository {
     if (!name) {
       throw new MissingParamError('name')
     }
-    this.user = await MongoHelper.save(email, hashpassword, name)
+    const userModel = await MongoHelper.getCollection('users')
+    const newUser = await userModel.insertOne({
+      email: email,
+      password: hashpassword,
+      name: name
+    })
+    this.user = {
+      _id: newUser.ops[0]._id,
+      name: newUser.ops[0].name,
+      email: newUser.ops[0].email
+    }
     return this.user
   }
 }

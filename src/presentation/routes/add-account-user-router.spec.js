@@ -1,9 +1,33 @@
-const { MissingParamError } = require('../../utils/erros')
+const { MissingParamError, InvalidParamError } = require('../../utils/erros')
 const { ServerError } = require('../erros')
 const AddAccountRoute = require('./add-account-user-router')
 
+const makeEmailValidator = () => {
+  class EmailValidatorSpy {
+    isValid (email) {
+      this.email = email
+      return this.isEmailValid
+    }
+  }
+
+  const emailValidatorSpy = new EmailValidatorSpy()
+  emailValidatorSpy.isEmailValid = true
+  return emailValidatorSpy
+}
+const MakePasswordValidatorSpy = () => {
+  class ValidatorPasswordSpy {
+    isValid (password) {
+      this.password = password
+      return this.isPasswordValid
+    }
+  }
+  const passwordValidatorSpy = new ValidatorPasswordSpy()
+  passwordValidatorSpy.isPasswordValid = true
+  return passwordValidatorSpy
+}
+
 class AddAccountUseCaseSpy {
-  async save (email, password, name) {
+  async add (email, password, name) {
     this.email = email
     this.password = password
     this.name = name
@@ -16,11 +40,20 @@ const makeAddAccountUseCase = () => {
 }
 const makeSut = () => {
   const addAccountUseCaseSpy = makeAddAccountUseCase()
-  const addAccountRoute = new AddAccountRoute(addAccountUseCaseSpy)
+  const emailValidatorSpy = makeEmailValidator()
+  const passwordValidatorSpy = MakePasswordValidatorSpy()
+  const addAccountRoute = new AddAccountRoute({
+    addAccountUseCase: addAccountUseCaseSpy,
+    passwordValidator: passwordValidatorSpy,
+    emailValidator: emailValidatorSpy
+  })
 
   return {
     sut: addAccountRoute,
-    addAccountUseCaseSpy
+    addAccountUseCaseSpy,
+    emailValidatorSpy,
+    passwordValidatorSpy
+
   }
 }
 
@@ -60,6 +93,36 @@ describe('Add Account User Route', () => {
     const httpResponse = await sut.route(httpRequest)
     expect(httpResponse.statusCode).toBe(400)
     expect(httpResponse.body.error).toBe(new MissingParamError('name').message)
+  })
+
+  test('Should return 400 if  password invalid is proveded', async () => {
+    const { sut, passwordValidatorSpy } = makeSut()
+    const httpRequest = {
+      body: {
+        email: 'any_email@gmail.com',
+        password: 'invalid_password',
+        name: 'any_name'
+      }
+    }
+    passwordValidatorSpy.isPasswordValid = false
+    const httpResponse = await sut.route(httpRequest)
+    expect(httpResponse.statusCode).toBe(400)
+    expect(httpResponse.body.error).toBe(new InvalidParamError('password').message)
+  })
+
+  test('Should return 400 if  email invalid is proveded', async () => {
+    const { sut, emailValidatorSpy } = makeSut()
+    const httpRequest = {
+      body: {
+        email: 'invalid_emailgmail.com',
+        password: 'valid_Password12',
+        name: 'any_name'
+      }
+    }
+    emailValidatorSpy.isEmailValid = false
+    const httpResponse = await sut.route(httpRequest)
+    expect(httpResponse.statusCode).toBe(400)
+    expect(httpResponse.body.error).toBe(new InvalidParamError('email').message)
   })
   test('Should return 500 if no httpRequest are proveded', async () => {
     const { sut } = makeSut()

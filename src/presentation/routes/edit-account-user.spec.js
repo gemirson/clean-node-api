@@ -1,15 +1,16 @@
 const { MissingParamError } = require('../../utils/erros')
 const { ServerError } = require('../erros')
+const HttpResponse = require('../helpers/http-response')
 
 const makeEditUserRouteSpy = () => {
   class EditUserRouteSpy {
     async route (httpRequest) {
       if (!httpRequest) {
-        throw new ServerError()
+        return HttpResponse.serverError()
       }
       const { _Id } = httpRequest.body
       if (!_Id) {
-        return new MissingParamError('_Id')
+        return HttpResponse.badRequest(new MissingParamError('email'))
       }
       return {
         statusCode: 400,
@@ -40,5 +41,11 @@ describe('Edit user account', () => {
     const httpResponse = await sut.route(httpRequest)
     expect(httpResponse.statusCode).toBe(400)
     expect(httpResponse.body.error).toBe(new MissingParamError('_Id').message)
+  })
+  test('Should return throw if no httpResquest is proveded', async () => {
+    const { sut } = makeSut()
+    const httpResponse = await sut.route()
+    expect(httpResponse.statusCode).toBe(500)
+    expect(httpResponse.body.error).toBe(new ServerError().message)
   })
 })

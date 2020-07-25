@@ -104,4 +104,21 @@ describe('Edit user account', () => {
     const user = await sut.route(httpRequest)
     expect(user).toBeNull()
   })
+
+  test('Should call EditUserUseCase with correct params', async () => {
+    const { sut, editUserUseCaseSpy } = makeSut()
+    const httpRequest = {
+      body: {
+        _Id: 'any_Id',
+        name: 'any_name',
+        email: 'any_email',
+        password: 'any_password'
+      }
+    }
+    await sut.route(httpRequest)
+    expect(editUserUseCaseSpy.name).toBe(httpRequest.body.name)
+    expect(editUserUseCaseSpy.email).toBe(httpRequest.body.email)
+    expect(editUserUseCaseSpy.password).toBe(httpRequest.body.password)
+    expect(editUserUseCaseSpy._Id).toBe(httpRequest.body._Id)
+  })
 })

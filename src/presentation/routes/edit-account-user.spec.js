@@ -75,7 +75,10 @@ class EditUserRouteSpy {
         name: name,
         email: email
       })
-      return this.user
+      if (this.user) {
+        return HttpResponse.ok(this.user)
+      }
+      return null
     } catch (error) {
       return HttpResponse.serverError()
     }
@@ -145,6 +148,33 @@ describe('Edit user account', () => {
     const httpResponse = await sut.route(httpRequest)
     expect(httpResponse.statusCode).toBe(500)
     expect(httpResponse.body.error).toBe(new ServerError().message)
+  })
+  test('Should return throw if no body is proveded', async () => {
+    const { sut } = makeSut()
+    const httpRequest = {
+    }
+    const httpResponse = await sut.route(httpRequest)
+    expect(httpResponse.statusCode).toBe(500)
+    expect(httpResponse.body.error).toBe(new ServerError().message)
+  })
+
+  test('Should return  200 when call EditUserUseCase with params corrects', async () => {
+    const { sut, editUserUseCaseSpy } = makeSut()
+    const httpRequest = {
+      body: {
+        _Id: 'any_Id',
+        name: 'any_name',
+        email: 'any_email@gmail.com'
+      }
+    }
+    editUserUseCaseSpy.user = {
+      _Id: 'any_Id',
+      name: 'any_name',
+      email: 'any_email@gmail.com'
+    }
+    const httpResponse = await sut.route(httpRequest)
+    expect(httpResponse.statusCode).toBe(200)
+    expect(httpResponse.body).toEqual(httpRequest.body)
   })
   test('Should return throw if no EditUserUseCase is proveded', async () => {
     const sut = new EditUserRouteSpy()

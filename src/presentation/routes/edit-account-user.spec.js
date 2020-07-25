@@ -1,14 +1,25 @@
-const { MissingParamError } = require('../../utils/erros')
+const { MissingParamError, InvalidParamError } = require('../../utils/erros')
 const { ServerError } = require('../erros')
 const HttpResponse = require('../helpers/http-response')
 
+const makeEmailValidator = () => {
+  class EmailValidatorSpy {
+    isValid (email) {
+      this.email = email
+      return this.isEmailValid
+    }
+  }
+
+  const emailValidatorSpy = new EmailValidatorSpy()
+  emailValidatorSpy.isEmailValid = true
+  return emailValidatorSpy
+}
 const makeEditUserUseCaseSpy = () => {
   class EditUserUseCaseSpy {
-    async edit (_Id, { name, email, password } = {}) {
+    async edit (_Id, { name, email } = {}) {
       this._Id = _Id
       this.name = name
       this.email = email
-      this.password = password
       return this.user
     }
   }
@@ -17,22 +28,26 @@ const makeEditUserUseCaseSpy = () => {
   return editUserUseCaseSpy
 }
 class EditUserRouteSpy {
-  constructor ({ editUserUseCase } = {}) {
+  constructor ({ editUserUseCase, emailValidator } = {}) {
     this.editUserUseCase = editUserUseCase
+    this.emailValidator = emailValidator
   }
 
   async route (httpRequest) {
     if (!httpRequest || !httpRequest.body || !this.editUserUseCase) {
       return HttpResponse.serverError()
     }
-    const { _Id, name, password, email } = httpRequest.body
+    const { _Id, name, email } = httpRequest.body
     if (!_Id) {
       return HttpResponse.badRequest(new MissingParamError('_Id'))
     }
+    const isValidEmail = await this.emailValidator.isValid(email)
+    if (!isValidEmail) {
+      return HttpResponse.badRequest(new InvalidParamError('email'))
+    }
     this.user = await this.editUserUseCase.edit(_Id, {
       name: name,
-      email: email,
-      password: password
+      email: email
     })
     return this.user
   }
@@ -40,12 +55,15 @@ class EditUserRouteSpy {
 
 const makeSut = () => {
   const editUserUseCaseSpy = makeEditUserUseCaseSpy()
+  const emailValidatorSpy = makeEmailValidator()
   const ediUserRouteSpy = new EditUserRouteSpy({
-    editUserUseCase: editUserUseCaseSpy
+    editUserUseCase: editUserUseCaseSpy,
+    emailValidator: emailValidatorSpy
   })
   return {
     sut: ediUserRouteSpy,
-    editUserUseCaseSpy: editUserUseCaseSpy
+    editUserUseCaseSpy: editUserUseCaseSpy,
+    emailValidatorSpy: emailValidatorSpy
   }
 }
 
@@ -81,8 +99,7 @@ describe('Edit user account', () => {
       body: {
         _Id: 'any_Id',
         name: 'any_name',
-        email: 'any_email',
-        password: 'any_password'
+        email: 'any_email'
       }
     }
     const httpResponse = await sut.route(httpRequest)
@@ -96,8 +113,7 @@ describe('Edit user account', () => {
       body: {
         _Id: 'any_Id',
         name: 'any_name',
-        email: 'any_email',
-        password: 'any_password'
+        email: 'any_email'
       }
     }
     editUserUseCaseSpy.user = null
@@ -111,14 +127,26 @@ describe('Edit user account', () => {
       body: {
         _Id: 'any_Id',
         name: 'any_name',
-        email: 'any_email',
-        password: 'any_password'
+        email: 'any_email'
       }
     }
     await sut.route(httpRequest)
     expect(editUserUseCaseSpy.name).toBe(httpRequest.body.name)
     expect(editUserUseCaseSpy.email).toBe(httpRequest.body.email)
-    expect(editUserUseCaseSpy.password).toBe(httpRequest.body.password)
     expect(editUserUseCaseSpy._Id).toBe(httpRequest.body._Id)
+  })
+  test('Should return throw if invalid emaild is proveded', async () => {
+    const { sut, emailValidatorSpy } = makeSut()
+    const httpRequest = {
+      body: {
+        _Id: 'any_Id',
+        name: 'any_name',
+        email: 'any_emailgmail.com'
+      }
+    }
+    emailValidatorSpy.isEmailValid = false
+    const httpResponse = await sut.route(httpRequest)
+    expect(httpResponse.statusCode).toBe(400)
+    expect(httpResponse.body.error).toBe(new InvalidParamError('email').message)
   })
 })

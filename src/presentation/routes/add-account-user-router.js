@@ -25,8 +25,6 @@ module.exports = class AddAccountRoute {
       }
       const isValidEmail = await this.emailValidator.isValid(email)
       const isValidPassword = await this.passwordValidator.isValid(password)
-      console.log(isValidEmail)
-      console.log(isValidPassword)
       if (!isValidEmail) {
         return HttpResponse.badRequest(new InvalidParamError('email'))
       }
@@ -39,7 +37,6 @@ module.exports = class AddAccountRoute {
       }
       return HttpResponse.Created(this.user)
     } catch (error) {
-      console.log(error)
       return HttpResponse.serverError()
     }
   }

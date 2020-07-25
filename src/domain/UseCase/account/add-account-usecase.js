@@ -19,7 +19,6 @@ module.exports = class AddAccountUseCase {
       throw new MissingParamError('name')
     }
     const resultValidate = await this.passwordValidator.isValid(password)
-    console.log(resultValidate)
     if (!resultValidate) {
       throw new InvalidParamError('password')
     }
@@ -28,7 +27,6 @@ module.exports = class AddAccountUseCase {
     }
     this.has_password = await this.encrypter.hashSync(password, 10)
     this.user = await this.saveUserRepository.save(email, this.has_password, name)
-    console.log(this.user)
     if (this.user) {
       return this.user
     }

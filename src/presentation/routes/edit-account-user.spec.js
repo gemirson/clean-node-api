@@ -5,7 +5,7 @@ const HttpResponse = require('../helpers/http-response')
 const makeEditUserRouteSpy = () => {
   class EditUserRouteSpy {
     async route (httpRequest) {
-      if (!httpRequest) {
+      if (!httpRequest || !httpRequest.body) {
         return HttpResponse.serverError()
       }
       const { _Id } = httpRequest.body
@@ -45,6 +45,15 @@ describe('Edit user account', () => {
   test('Should return throw if no httpResquest is proveded', async () => {
     const { sut } = makeSut()
     const httpResponse = await sut.route()
+    expect(httpResponse.statusCode).toBe(500)
+    expect(httpResponse.body.error).toBe(new ServerError().message)
+  })
+
+  test('Should return throw if no body is proveded', async () => {
+    const { sut } = makeSut()
+    const httpRequest = {
+    }
+    const httpResponse = await sut.route(httpRequest)
     expect(httpResponse.statusCode).toBe(500)
     expect(httpResponse.body.error).toBe(new ServerError().message)
   })

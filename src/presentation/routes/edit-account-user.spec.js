@@ -34,7 +34,7 @@ class EditUserRouteSpy {
   }
 
   async route (httpRequest) {
-    if (!httpRequest || !httpRequest.body || !this.editUserUseCase) {
+    if (!httpRequest || !httpRequest.body || !this.editUserUseCase || !this.emailValidator) {
       return HttpResponse.serverError()
     }
     const { _Id, name, email } = httpRequest.body
@@ -83,6 +83,30 @@ describe('Edit user account', () => {
     const httpResponse = await sut.route(httpRequest)
     expect(httpResponse.statusCode).toBe(400)
     expect(httpResponse.body.error).toBe(new MissingParamError('_Id').message)
+  })
+  test('Should return 400 if no name is proveded', async () => {
+    const { sut } = makeSut()
+    const httpRequest = {
+      body: {
+        _Id: 'valid_Id'
+      }
+    }
+    const httpResponse = await sut.route(httpRequest)
+    expect(httpResponse.statusCode).toBe(400)
+    expect(httpResponse.body.error).toBe(new MissingParamError('name').message)
+  })
+
+  test('Should return 400 if no email is proveded', async () => {
+    const { sut } = makeSut()
+    const httpRequest = {
+      body: {
+        _Id: 'valid_Id',
+        name: 'any_name'
+      }
+    }
+    const httpResponse = await sut.route(httpRequest)
+    expect(httpResponse.statusCode).toBe(400)
+    expect(httpResponse.body.error).toBe(new MissingParamError('email').message)
   })
   test('Should return throw if no httpResquest is proveded', async () => {
     const { sut } = makeSut()
@@ -155,28 +179,36 @@ describe('Edit user account', () => {
     expect(httpResponse.statusCode).toBe(400)
     expect(httpResponse.body.error).toBe(new InvalidParamError('email').message)
   })
-  test('Should return 400 if no name is proveded', async () => {
-    const { sut } = makeSut()
-    const httpRequest = {
-      body: {
-        _Id: 'valid_Id'
+  test('Should throw if invalid dependency are provided', async () => {
+    const invalid = {}
+    const emailValidator = makeEmailValidator()
+    const suts = [].concat(
+      new EditUserRouteSpy(),
+      new EditUserRouteSpy(
+        {}
+      ),
+      new EditUserRouteSpy({
+        EditUserRouteSpy: invalid
+      }),
+      new EditUserRouteSpy({
+        EditUserRouteSpy: invalid,
+        emailValidator
+      }),
+      new EditUserRouteSpy({
+        emailValidator
+      })
+    )
+    for (const sut of suts) {
+      const httpRequest = {
+        body: {
+          _Id: 'valid_Id',
+          email: 'valid_email@gmail.com',
+          name: 'any_name'
+        }
       }
+      const httpResponse = await sut.route(httpRequest)
+      expect(httpResponse.statusCode).toBe(500)
+      expect(httpResponse.body.error).toBe(new ServerError().message)
     }
-    const httpResponse = await sut.route(httpRequest)
-    expect(httpResponse.statusCode).toBe(400)
-    expect(httpResponse.body.error).toBe(new MissingParamError('name').message)
-  })
-
-  test('Should return 400 if no email is proveded', async () => {
-    const { sut } = makeSut()
-    const httpRequest = {
-      body: {
-        _Id: 'valid_Id',
-        name: 'any_name'
-      }
-    }
-    const httpResponse = await sut.route(httpRequest)
-    expect(httpResponse.statusCode).toBe(400)
-    expect(httpResponse.body.error).toBe(new MissingParamError('email').message)
   })
 })

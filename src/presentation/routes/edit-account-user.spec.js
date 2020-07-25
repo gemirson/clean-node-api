@@ -14,6 +14,24 @@ const makeEmailValidator = () => {
   emailValidatorSpy.isEmailValid = true
   return emailValidatorSpy
 }
+
+const makeEmailValidatorWithError = () => {
+  class EmailValidatorSpy {
+    isValid () {
+      throw new Error()
+    }
+  }
+  return new EmailValidatorSpy()
+}
+const makeEditUserUseCaseWithError = () => {
+  class EditUserUseCaseSpy {
+    isValid () {
+      throw new Error()
+    }
+  }
+  return new EditUserUseCaseSpy()
+}
+
 const makeEditUserUseCaseSpy = () => {
   class EditUserUseCaseSpy {
     async edit (_Id, { name, email } = {}) {
@@ -27,6 +45,7 @@ const makeEditUserUseCaseSpy = () => {
   const editUserUseCaseSpy = new EditUserUseCaseSpy()
   return editUserUseCaseSpy
 }
+
 class EditUserRouteSpy {
   constructor ({ editUserUseCase, emailValidator } = {}) {
     this.editUserUseCase = editUserUseCase
@@ -34,28 +53,32 @@ class EditUserRouteSpy {
   }
 
   async route (httpRequest) {
-    if (!httpRequest || !httpRequest.body || !this.editUserUseCase || !this.emailValidator) {
+    try {
+      if (!httpRequest || !httpRequest.body || !this.editUserUseCase || !this.emailValidator) {
+        return HttpResponse.serverError()
+      }
+      const { _Id, name, email } = httpRequest.body
+      if (!_Id) {
+        return HttpResponse.badRequest(new MissingParamError('_Id'))
+      }
+      if (!name) {
+        return HttpResponse.badRequest(new MissingParamError('name'))
+      }
+      if (!email) {
+        return HttpResponse.badRequest(new MissingParamError('email'))
+      }
+      const isValidEmail = await this.emailValidator.isValid(email)
+      if (!isValidEmail) {
+        return HttpResponse.badRequest(new InvalidParamError('email'))
+      }
+      this.user = await this.editUserUseCase.edit(_Id, {
+        name: name,
+        email: email
+      })
+      return this.user
+    } catch (error) {
       return HttpResponse.serverError()
     }
-    const { _Id, name, email } = httpRequest.body
-    if (!_Id) {
-      return HttpResponse.badRequest(new MissingParamError('_Id'))
-    }
-    if (!name) {
-      return HttpResponse.badRequest(new MissingParamError('name'))
-    }
-    if (!email) {
-      return HttpResponse.badRequest(new MissingParamError('email'))
-    }
-    const isValidEmail = await this.emailValidator.isValid(email)
-    if (!isValidEmail) {
-      return HttpResponse.badRequest(new InvalidParamError('email'))
-    }
-    this.user = await this.editUserUseCase.edit(_Id, {
-      name: name,
-      email: email
-    })
-    return this.user
   }
 }
 
@@ -204,6 +227,35 @@ describe('Edit user account', () => {
           _Id: 'valid_Id',
           email: 'valid_email@gmail.com',
           name: 'any_name'
+        }
+      }
+      const httpResponse = await sut.route(httpRequest)
+      expect(httpResponse.statusCode).toBe(500)
+      expect(httpResponse.body.error).toBe(new ServerError().message)
+    }
+  })
+
+  test('Should throw if any dependency throws', async () => {
+    const editUserUseCase = makeEditUserUseCaseSpy()
+    const emailValidator = makeEmailValidator()
+
+    const suts = [].concat(
+      new EditUserRouteSpy({
+        editUserUseCase: makeEditUserUseCaseWithError(),
+        emailValidator
+      }),
+      new EditUserRouteSpy({
+        editUserUseCase,
+        emailValidator: makeEmailValidatorWithError()
+      })
+    )
+
+    for (const sut of suts) {
+      const httpRequest = {
+        body: {
+          _Id: 'valid_Id',
+          email: 'any_email@gmail.com',
+          name: 'valid_name'
         }
       }
       const httpResponse = await sut.route(httpRequest)

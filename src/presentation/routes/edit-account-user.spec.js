@@ -41,6 +41,12 @@ class EditUserRouteSpy {
     if (!_Id) {
       return HttpResponse.badRequest(new MissingParamError('_Id'))
     }
+    if (!name) {
+      return HttpResponse.badRequest(new MissingParamError('name'))
+    }
+    if (!email) {
+      return HttpResponse.badRequest(new MissingParamError('email'))
+    }
     const isValidEmail = await this.emailValidator.isValid(email)
     if (!isValidEmail) {
       return HttpResponse.badRequest(new InvalidParamError('email'))
@@ -99,7 +105,7 @@ describe('Edit user account', () => {
       body: {
         _Id: 'any_Id',
         name: 'any_name',
-        email: 'any_email'
+        email: 'any_email@gmail.com'
       }
     }
     const httpResponse = await sut.route(httpRequest)
@@ -113,7 +119,7 @@ describe('Edit user account', () => {
       body: {
         _Id: 'any_Id',
         name: 'any_name',
-        email: 'any_email'
+        email: 'any_email@gmail.com'
       }
     }
     editUserUseCaseSpy.user = null
@@ -127,7 +133,7 @@ describe('Edit user account', () => {
       body: {
         _Id: 'any_Id',
         name: 'any_name',
-        email: 'any_email'
+        email: 'any_email@gmail.com'
       }
     }
     await sut.route(httpRequest)
@@ -148,5 +154,29 @@ describe('Edit user account', () => {
     const httpResponse = await sut.route(httpRequest)
     expect(httpResponse.statusCode).toBe(400)
     expect(httpResponse.body.error).toBe(new InvalidParamError('email').message)
+  })
+  test('Should return 400 if no name is proveded', async () => {
+    const { sut } = makeSut()
+    const httpRequest = {
+      body: {
+        _Id: 'valid_Id'
+      }
+    }
+    const httpResponse = await sut.route(httpRequest)
+    expect(httpResponse.statusCode).toBe(400)
+    expect(httpResponse.body.error).toBe(new MissingParamError('name').message)
+  })
+
+  test('Should return 400 if no email is proveded', async () => {
+    const { sut } = makeSut()
+    const httpRequest = {
+      body: {
+        _Id: 'valid_Id',
+        name: 'any_name'
+      }
+    }
+    const httpResponse = await sut.route(httpRequest)
+    expect(httpResponse.statusCode).toBe(400)
+    expect(httpResponse.body.error).toBe(new MissingParamError('email').message)
   })
 })

@@ -32,6 +32,15 @@ const MakeEmailValidatorSpy = () => {
   emailValidatorSpy.isEmailValid = true
   return emailValidatorSpy
 }
+
+const MakeEmailValidatorWithError = () => {
+  class EmailValidatorWithError {
+    async isValid () {
+      throw new Error()
+    }
+  }
+  return new EmailValidatorWithError()
+}
 class EditAccountUseCaseSpy {
   constructor ({ emailValidator, editUserUseCase } = {}) {
     this.emailValidator = emailValidator
@@ -55,9 +64,16 @@ class EditAccountUseCaseSpy {
     if (this.user) {
       return this.user
     }
-    console.log(this.user)
     return null
   }
+}
+const MakeEditUserRepositoryWithError = () => {
+  class EditAccountUseCaseSpyWithError {
+    async edit (_Id, { name, email } = {}) {
+      throw new Error()
+    }
+  }
+  return new EditAccountUseCaseSpyWithError()
 }
 const makeSut = () => {
   const emailValidator = MakeEmailValidatorSpy()
@@ -141,6 +157,29 @@ describe('Edit account user', () => {
       new EditAccountUseCaseSpy({
         editUserRepository: invalid,
         emailValidator
+      })
+    )
+    for (const sut of suts) {
+      const promise = sut.edit('_Id', 'any_email@mail.com', 'any_name')
+      expect(promise).rejects.toThrow()
+    }
+  })
+  test('Should throw if any dependency throws', async () => {
+    const editUserRepository = MakeEditUserRepository()
+    const emailValidator = MakeEmailValidatorSpy()
+    const suts = [].concat(
+      new EditAccountUseCaseSpy(),
+      new EditAccountUseCaseSpy({
+        editUserRepository,
+        emailValidator: null
+      }),
+      new EditAccountUseCaseSpy({
+        editUserRepository: MakeEditUserRepositoryWithError(),
+        emailValidator
+      }),
+      new EditAccountUseCaseSpy({
+        editUserRepository,
+        emailValidator: MakeEmailValidatorWithError()
       })
     )
     for (const sut of suts) {

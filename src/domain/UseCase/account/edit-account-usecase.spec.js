@@ -3,7 +3,17 @@ const { MissingParamError } = require('../../../utils/erros/index')
 const MakeEditUserRepository = () => {
   class EditUserRepositorySpy {
     async edit (_Id, name, email) {
-      return this.user
+      this._Id = _Id
+      this.name = name
+      this.email = email
+      if (!this.user) {
+        return {
+          _Id: this._Id,
+          name: this.name,
+          email: this.email
+        }
+      }
+      return null
     }
   }
   const editUserRepositorySpy = new EditUserRepositorySpy()
@@ -42,7 +52,11 @@ class EditAccountUseCaseSpy {
       throw new MissingParamError('name')
     }
     this.user = await this.editUserUseCase.edit(_Id, name, email)
-    return this.user
+    if (this.user) {
+      return this.user
+    }
+    console.log(this.user)
+    return null
   }
 }
 const makeSut = () => {
@@ -89,11 +103,21 @@ describe('Edit account user', () => {
   })
   test('Should return null if EditUserRepository return null', async () => {
     const { sut, editUserRepositorySpy } = makeSut()
-    editUserRepositorySpy.user = null
+    editUserRepositorySpy.user = {}
     const user = await sut.edit('valid_Id', {
       name: 'any_name',
       email: 'valid_email@gmail.com'
     })
     expect(user).toBeNull()
+  })
+  test('Should return user if when call EditUserRepository with params corrects', async () => {
+    const { sut } = makeSut()
+    const user = await sut.edit('valid_Id', {
+      name: 'any_name',
+      email: 'valid_email@gmail.com'
+    })
+    expect(user._Id).toBe('valid_Id')
+    expect(user.email).toBe('valid_email@gmail.com')
+    expect(user.name).toBe('any_name')
   })
 })

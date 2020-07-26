@@ -1,6 +1,6 @@
 const { MissingParamError, InvalidParamError } = require('../../utils/erros')
 const { ServerError } = require('../erros')
-const HttpResponse = require('../helpers/http-response')
+const EditAccountUserRoute = require('./edit-account-user-router')
 
 const makeEmailValidator = () => {
   class EmailValidatorSpy {
@@ -46,49 +46,10 @@ const makeEditUserUseCaseSpy = () => {
   return editUserUseCaseSpy
 }
 
-class EditUserRouteSpy {
-  constructor ({ editUserUseCase, emailValidator } = {}) {
-    this.editUserUseCase = editUserUseCase
-    this.emailValidator = emailValidator
-  }
-
-  async route (httpRequest) {
-    try {
-      if (!httpRequest || !httpRequest.body || !this.editUserUseCase || !this.emailValidator) {
-        return HttpResponse.serverError()
-      }
-      const { _Id, name, email } = httpRequest.body
-      if (!_Id) {
-        return HttpResponse.badRequest(new MissingParamError('_Id'))
-      }
-      if (!name) {
-        return HttpResponse.badRequest(new MissingParamError('name'))
-      }
-      if (!email) {
-        return HttpResponse.badRequest(new MissingParamError('email'))
-      }
-      const isValidEmail = await this.emailValidator.isValid(email)
-      if (!isValidEmail) {
-        return HttpResponse.badRequest(new InvalidParamError('email'))
-      }
-      this.user = await this.editUserUseCase.edit(_Id, {
-        name: name,
-        email: email
-      })
-      if (this.user) {
-        return HttpResponse.ok(this.user)
-      }
-      return null
-    } catch (error) {
-      return HttpResponse.serverError()
-    }
-  }
-}
-
 const makeSut = () => {
   const editUserUseCaseSpy = makeEditUserUseCaseSpy()
   const emailValidatorSpy = makeEmailValidator()
-  const ediUserRouteSpy = new EditUserRouteSpy({
+  const ediUserRouteSpy = new EditAccountUserRoute({
     editUserUseCase: editUserUseCaseSpy,
     emailValidator: emailValidatorSpy
   })
@@ -177,7 +138,7 @@ describe('Edit user account', () => {
     expect(httpResponse.body).toEqual(httpRequest.body)
   })
   test('Should return throw if no EditUserUseCase is proveded', async () => {
-    const sut = new EditUserRouteSpy()
+    const sut = new EditAccountUserRoute()
     const httpRequest = {
       body: {
         _Id: 'any_Id',
@@ -236,18 +197,18 @@ describe('Edit user account', () => {
     const invalid = {}
     const emailValidator = makeEmailValidator()
     const suts = [].concat(
-      new EditUserRouteSpy(),
-      new EditUserRouteSpy(
+      new EditAccountUserRoute(),
+      new EditAccountUserRoute(
         {}
       ),
-      new EditUserRouteSpy({
+      new EditAccountUserRoute({
         EditUserRouteSpy: invalid
       }),
-      new EditUserRouteSpy({
+      new EditAccountUserRoute({
         EditUserRouteSpy: invalid,
         emailValidator
       }),
-      new EditUserRouteSpy({
+      new EditAccountUserRoute({
         emailValidator
       })
     )
@@ -270,11 +231,11 @@ describe('Edit user account', () => {
     const emailValidator = makeEmailValidator()
 
     const suts = [].concat(
-      new EditUserRouteSpy({
+      new EditAccountUserRoute({
         editUserUseCase: makeEditUserUseCaseWithError(),
         emailValidator
       }),
-      new EditUserRouteSpy({
+      new EditAccountUserRoute({
         editUserUseCase,
         emailValidator: makeEmailValidatorWithError()
       })

@@ -6,7 +6,10 @@ class EditAccountUseCaseSpy {
     this.name = name
     this.email = email
     if (!email) {
-      return new MissingParamError('email')
+      throw new MissingParamError('email')
+    }
+    if (!name) {
+      throw new MissingParamError('name')
     }
     return this.user
   }
@@ -21,7 +24,16 @@ const makeSut = () => {
 describe('Edit account user', () => {
   test('Should return throw if no email is provided', async () => {
     const { sut } = makeSut()
-    const promise = sut.edit()
+    const promise = sut.edit('valid_Id', {
+      name: 'any_name'
+    })
     expect(promise).rejects.toThrow(new MissingParamError('email'))
+  })
+  test('Should return throw if no name is provided', async () => {
+    const { sut } = makeSut()
+    const promise = sut.edit('valid_Id', {
+      email: 'valid_email@gmail.com'
+    })
+    expect(promise).rejects.toThrow(new MissingParamError('name'))
   })
 })

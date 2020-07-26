@@ -120,4 +120,32 @@ describe('Edit account user', () => {
     expect(user.email).toBe('valid_email@gmail.com')
     expect(user.name).toBe('any_name')
   })
+  test('Should throw if invalid dependency are provided', async () => {
+    const invalid = {}
+    const editUserRepository = MakeEditUserRepository()
+    const emailValidator = MakeEmailValidatorSpy()
+    const suts = [].concat(
+      new EditAccountUseCaseSpy(),
+      new EditAccountUseCaseSpy({
+        editUserRepository: null,
+        emailValidator: null
+      }),
+      new EditAccountUseCaseSpy({
+        editUserRepository: invalid,
+        emailValidator: null
+      }),
+      new EditAccountUseCaseSpy({
+        editUserRepository,
+        emailValidator: null
+      }),
+      new EditAccountUseCaseSpy({
+        editUserRepository: invalid,
+        emailValidator
+      })
+    )
+    for (const sut of suts) {
+      const promise = sut.edit('_Id', 'any_email@mail.com', 'any_name')
+      expect(promise).rejects.toThrow()
+    }
+  })
 })

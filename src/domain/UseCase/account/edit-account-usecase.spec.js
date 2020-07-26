@@ -1,5 +1,5 @@
 const { MissingParamError } = require('../../../utils/erros/index')
-
+const EditAccountUseCase = require('./edit-account-usecase')
 const MakeEditUserRepository = () => {
   class EditUserRepositorySpy {
     async edit (_Id, name, email) {
@@ -41,32 +41,7 @@ const MakeEmailValidatorWithError = () => {
   }
   return new EmailValidatorWithError()
 }
-class EditAccountUseCaseSpy {
-  constructor ({ emailValidator, editUserUseCase } = {}) {
-    this.emailValidator = emailValidator
-    this.editUserUseCase = editUserUseCase
-  }
 
-  async edit (_Id, { name, email } = {}) {
-    if (!this.emailValidator) {
-      throw new MissingParamError('emailValidator class')
-    }
-    if (!_Id) {
-      throw new MissingParamError('_Id')
-    }
-    if (!email) {
-      throw new MissingParamError('email')
-    }
-    if (!name) {
-      throw new MissingParamError('name')
-    }
-    this.user = await this.editUserUseCase.edit(_Id, name, email)
-    if (this.user) {
-      return this.user
-    }
-    return null
-  }
-}
 const MakeEditUserRepositoryWithError = () => {
   class EditAccountUseCaseSpyWithError {
     async edit (_Id, { name, email } = {}) {
@@ -78,7 +53,7 @@ const MakeEditUserRepositoryWithError = () => {
 const makeSut = () => {
   const emailValidator = MakeEmailValidatorSpy()
   const editUserRepositorySpy = MakeEditUserRepository()
-  const editUserUseCaseSpy = new EditAccountUseCaseSpy({
+  const editUserUseCaseSpy = new EditAccountUseCase({
     emailValidator: emailValidator,
     editUserUseCase: editUserRepositorySpy
   })
@@ -110,7 +85,7 @@ describe('Edit account user', () => {
   })
 
   test('Should return throw if no emailValidator is provided', async () => {
-    const sut = new EditAccountUseCaseSpy()
+    const sut = new EditAccountUseCase()
     const promise = sut.edit('valid_Id', {
       name: 'any_name',
       email: 'valid_email@gmail.com'
@@ -141,20 +116,20 @@ describe('Edit account user', () => {
     const editUserRepository = MakeEditUserRepository()
     const emailValidator = MakeEmailValidatorSpy()
     const suts = [].concat(
-      new EditAccountUseCaseSpy(),
-      new EditAccountUseCaseSpy({
+      new EditAccountUseCase(),
+      new EditAccountUseCase({
         editUserRepository: null,
         emailValidator: null
       }),
-      new EditAccountUseCaseSpy({
+      new EditAccountUseCase({
         editUserRepository: invalid,
         emailValidator: null
       }),
-      new EditAccountUseCaseSpy({
+      new EditAccountUseCase({
         editUserRepository,
         emailValidator: null
       }),
-      new EditAccountUseCaseSpy({
+      new EditAccountUseCase({
         editUserRepository: invalid,
         emailValidator
       })
@@ -168,16 +143,16 @@ describe('Edit account user', () => {
     const editUserRepository = MakeEditUserRepository()
     const emailValidator = MakeEmailValidatorSpy()
     const suts = [].concat(
-      new EditAccountUseCaseSpy(),
-      new EditAccountUseCaseSpy({
+      new EditAccountUseCase(),
+      new EditAccountUseCase({
         editUserRepository,
         emailValidator: null
       }),
-      new EditAccountUseCaseSpy({
+      new EditAccountUseCase({
         editUserRepository: MakeEditUserRepositoryWithError(),
         emailValidator
       }),
-      new EditAccountUseCaseSpy({
+      new EditAccountUseCase({
         editUserRepository,
         emailValidator: MakeEmailValidatorWithError()
       })

@@ -1,10 +1,37 @@
 const { MissingParamError } = require('../../../utils/erros/index')
 
+const MakeEditUserRepository = () => {
+  class EditUserRepositorySpy {
+    async edit (_Id, name, email) {
+      return this.user
+    }
+  }
+  const editUserRepositorySpy = new EditUserRepositorySpy()
+  return editUserRepositorySpy
+}
+
+const MakeEmailValidatorSpy = () => {
+  class EmailValidatorSpy {
+    isValid (email) {
+      this.email = email
+      return this.isEmailValid
+    }
+  }
+
+  const emailValidatorSpy = new EmailValidatorSpy()
+  emailValidatorSpy.isEmailValid = true
+  return emailValidatorSpy
+}
 class EditAccountUseCaseSpy {
+  constructor ({ emailValidator, editUserUseCase } = {}) {
+    this.emailValidator = emailValidator
+    this.editUserUseCase = editUserUseCase
+  }
+
   async edit (_Id, { name, email } = {}) {
-    this._Id = _Id
-    this.name = name
-    this.email = email
+    if (!this.emailValidator) {
+      throw new MissingParamError('emailValidator class')
+    }
     if (!_Id) {
       throw new MissingParamError('_Id')
     }
@@ -14,13 +41,20 @@ class EditAccountUseCaseSpy {
     if (!name) {
       throw new MissingParamError('name')
     }
+    this.user = await this.editUserUseCase.edit(_Id, name, email)
     return this.user
   }
 }
 const makeSut = () => {
-  const editUserUseCaseSpy = new EditAccountUseCaseSpy()
+  const emailValidator = MakeEmailValidatorSpy()
+  const editUserRepositorySpy = MakeEditUserRepository()
+  const editUserUseCaseSpy = new EditAccountUseCaseSpy({
+    emailValidator: emailValidator,
+    editUserUseCase: editUserRepositorySpy
+  })
   return {
-    sut: editUserUseCaseSpy
+    sut: editUserUseCaseSpy,
+    editUserRepositorySpy: editUserRepositorySpy
   }
 }
 
@@ -43,5 +77,23 @@ describe('Edit account user', () => {
     const { sut } = makeSut()
     const promise = sut.edit()
     expect(promise).rejects.toThrow(new MissingParamError('_Id'))
+  })
+
+  test('Should return throw if no emailValidator is provided', async () => {
+    const sut = new EditAccountUseCaseSpy()
+    const promise = sut.edit('valid_Id', {
+      name: 'any_name',
+      email: 'valid_email@gmail.com'
+    })
+    expect(promise).rejects.toThrow(new MissingParamError('emailValidator class'))
+  })
+  test('Should return null if EditUserRepository return null', async () => {
+    const { sut, editUserRepositorySpy } = makeSut()
+    editUserRepositorySpy.user = null
+    const user = await sut.edit('valid_Id', {
+      name: 'any_name',
+      email: 'valid_email@gmail.com'
+    })
+    expect(user).toBeNull()
   })
 })

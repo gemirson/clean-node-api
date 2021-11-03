@@ -45,6 +45,6 @@
     "mongodb": "^3.5.9",
     "mongose": "^0.0.2-security",
     "password-validator": "^5.0.3",
-    "validator": "^13.1.1"
+    "validator": "^13.7.0"
   }
 }
